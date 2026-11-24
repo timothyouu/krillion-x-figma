@@ -1,0 +1,20 @@
+{
+  "_note": "Shape example only. Real prompts live in the private Google Sheet and Supabase, never in this repo.",
+  "game": "example",
+  "rounds": [
+    {
+      "round": 1,
+      "theme": "Warm up",
+      "prompt": "Name a color",
+      "answers": [
+        { "answer": "Red", "aliases": [], "tier": "common" },
+        { "answer": "Teal", "aliases": [], "tier": "too_clever" },
+        { "answer": "Magenta", "aliases": [], "tier": "uncommon" },
+        { "answer": "Cerulean", "aliases": [], "tier": "rare" },
+        { "answer": "Vermilion", "aliases": ["vermillion"], "tier": "deep_cut" },
+        { "answer": "Falu red", "aliases": ["falun red"], "tier": "figlion",
+          "fun_fact": "A deep red paint made from copper mine waste in Falun, Sweden." }
+      ]
+    }
+  ]
+}
