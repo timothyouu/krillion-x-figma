@@ -1,0 +1,24 @@
+# Dependencies and builds
+node_modules/
+dist/
+.vercel/
+
+# Env: only the example file is committed
+.env
+.env.*
+!.env.example
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Real game content never goes in this public repo
+supabase/seed/*
+!supabase/seed/*.example.json
+*.csv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
