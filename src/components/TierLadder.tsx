@@ -1,73 +1,86 @@
 import type { CSSProperties } from 'react'
+import { FALL_CURVE, sinkDurationMs, waypointTime } from '../features/dive/diveMotion'
 import { TIERS, formatDepth } from '../lib/tiers'
 import type { TierKey } from '../lib/types'
+import { FigPalAvatar } from './FigPalAvatar'
 import { SelectionFrame } from './SelectionFrame'
 import { Stamp } from './Stamp'
 
-const ROW_PX = 44
-const SURFACE_PX = 40
-
-/** Sink time grows with depth: the deeper the tier, the longer the fall. 0 for a miss. */
-export function sinkDurationMs(tier: TierKey | null): number {
-  const index = tier ? TIERS.findIndex((t) => t.key === tier) : -1
-  return index < 0 ? 0 : 520 + index * 80
-}
-
 interface TierLadderProps {
   tier: TierKey | null
-  /** Text on the sinking chip: the canonical answer, or "nothing landed". */
   chipText: string
+  figpalSlug: string
 }
 
-/**
- * The reveal's signature moment: the answer chip sinks past each tier line and stops at the
- * tier it landed in. A miss never leaves the surface.
- */
-export function TierLadder({ tier, chipText }: TierLadderProps) {
-  const index = tier ? TIERS.findIndex((t) => t.key === tier) : -1
-  const targetY = index < 0 ? 0 : SURFACE_PX + index * ROW_PX
+export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
+  const index = TIERS.findIndex((entry) => entry.key === tier)
+  const duration = sinkDurationMs(tier)
   const motion = {
-    height: SURFACE_PX + TIERS.length * ROW_PX,
-    '--sink-distance': targetY + 'px',
-    '--sink-duration': sinkDurationMs(tier) + 'ms',
+    '--sink-steps': Math.max(0, index + 1),
+    '--sink-duration': duration + 'ms',
+    '--fall-curve': FALL_CURVE,
   } as CSSProperties
 
   return (
-    <div className="relative select-none" style={motion}>
-      <div className="flex items-center justify-end border-b border-dashed border-line pr-1" style={{ height: SURFACE_PX }}>
-        <span className="font-mono text-[12px] text-mute">surface · 0 m</span>
+    <div className="tier-track relative select-none" style={motion}>
+      <div className="tier-row flex items-center justify-end border-b border-dashed border-line px-2">
+        <span className="font-mono text-[11px] text-mute">surface · 0 m</span>
       </div>
-      <ol aria-hidden>
-        {TIERS.map((t, i) => {
+      {tier ? <div className="tier-travel-line" aria-hidden="true" /> : null}
+      <ol aria-hidden="true">
+        {TIERS.map((entry, i) => {
           const isHit = i === index
+          const passed = i <= index
+          const connectDepth = isHit && entry.points >= 60
+          const rowMotion = {
+            '--tier-color': entry.color,
+            '--waypoint-delay': (passed ? waypointTime((i + 1) / (index + 1), duration) : 0) + 'ms',
+          } as CSSProperties
+
           return (
             <li
-              key={t.key}
-              className="relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-dashed border-line pl-[33%] pr-1 lg:grid-cols-[minmax(0,1fr)_auto_66px] lg:gap-3 lg:pl-[35%]"
-              style={{ height: ROW_PX }}
+              key={entry.key}
+              className="tier-row relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 border-b border-dashed border-line pl-[41%] pr-2 lg:grid-cols-[minmax(0,1fr)_auto_66px] lg:gap-2 lg:pl-[36%]"
+              style={rowMotion}
             >
-              {isHit ? <span className="tier-landing absolute inset-0 -z-10" style={{ backgroundColor: t.color + '2e' }} /> : null}
-              <span className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
-                <Stamp tier={t.key} size={28} className={`size-[22px]! shrink-0 sm:size-7! ${isHit ? '' : 'opacity-55'}`} />
-                <span className={`truncate text-[16px] leading-tight sm:text-[18px] lg:text-[20px] ${isHit ? 'text-ink' : 'text-ink-soft'}`}>
-                  {t.word}
-                </span>
+              {passed ? <span className={'tier-waypoint' + (isHit ? ' tier-landing' : '')} /> : null}
+              <span className="flex min-w-0 items-center gap-1 sm:gap-2">
+                <Stamp tier={entry.key} size={28} className={'size-5! shrink-0 sm:size-7! ' + (isHit ? '' : 'opacity-65')} />
+                <span className="truncate text-[14px] leading-tight sm:text-[17px] lg:text-[19px]">{entry.word}</span>
               </span>
-              <span className="font-mono text-[12px] text-mute tabular">{t.points}</span>
-              <span className="hidden w-[66px] text-right font-mono text-[12px] text-mute tabular lg:inline">
-                {formatDepth(t.points * 10)}
+              <span className="font-mono text-[11px] text-mute tabular">{entry.points}</span>
+              <span className={'hidden w-[66px] text-right font-mono text-[11px] tabular lg:inline ' + (connectDepth ? 'text-[#14609c]' : 'text-mute')}>
+                {formatDepth(entry.points * 10)}
               </span>
+              {connectDepth ? <DepthConnector /> : null}
             </li>
           )
         })}
       </ol>
-      <div className={'absolute left-0 top-[6px] w-[31%] lg:w-[33%] ' + (index < 0 ? '' : 'tier-sink')}>
+      <div className={'tier-answer absolute left-1 top-0.5 w-[38%] lg:w-[33%] ' + (tier ? 'tier-sink' : '')}>
         <SelectionFrame className="w-fit max-w-full">
-          <span className="block truncate bg-paper px-2.5 py-1 font-mono text-[15px] leading-[22px] sm:text-[17px]" title={chipText}>
-            {chipText}
+          <span className="flex min-w-0 items-center gap-0.5 bg-paper px-1.5 py-0.5 font-mono text-[13px] leading-[20px] sm:gap-1.5 sm:text-[15px]" title={chipText}>
+            {tier ? <FigPalAvatar slug={figpalSlug} width={20} className="shrink-0" decorative /> : null}
+            <span className="truncate">{chipText}</span>
           </span>
         </SelectionFrame>
       </div>
+    </div>
+  )
+}
+
+/** The connector runs in the space below the landed chip and tier labels. */
+function DepthConnector() {
+  return (
+    <div className="tier-connector">
+      <span className="tier-connector__anchor" />
+      <span className="tier-connector__line" />
+      <span className="tier-connector__drag">
+        <svg viewBox="0 0 20 22" width="13" height="14" fill="none">
+          <path d="M2 1.5 18 13l-7.6.5L7 20 2 1.5Z" fill="currentColor" stroke="white" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
+      </span>
+      <span className="tier-connector__target" />
     </div>
   )
 }

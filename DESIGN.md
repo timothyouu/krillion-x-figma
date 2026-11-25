@@ -76,17 +76,21 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 - Wide layout starts at 1280 px. The centered dive and status columns use Oscar’s 882 px card width. Results are capped at 1120 px and leaderboard at 1200 px. On tall displays, the dive stays within a 950 px play area and the ruler stays beside the centered composition.
 - Tablet and narrow laptop: the picker opens as its own view, and the HUD carries depth until the wide layout has room for the ruler.
-- Phone: the Change FigPal button sits beside its preview. The reveal shows the verdict above the ladder. Below 360 px, Submit uses its own row to leave room for the answer field. Short landscape screens use a compact prompt so the field and timer stay in view.
+- Phone: the Change FigPal button sits beside its preview. The reveal keeps the compact tier track above the verdict so the fall is visible immediately. Below 360 px, Submit uses its own row to leave room for the answer field. Short landscape screens use a compact prompt so the field and timer stay in view.
 
 ## Motion
 
-One authored moment per screen; everything else is quiet.
+The main reveal is a descent through the Figma canvas. The paper frames and selection handles keep the same visual language throughout the dive.
 
-- **Sink**: the selection chip slides to its tier row over 520–920 ms. The row tints and the stamp presses when it lands. The verdict, points, and controls are readable from the start.
-- **Ruler and HUD**: the ruler slides up over 920 ms while score and depth tick through intermediate values. Assistive technology gets the final totals immediately.
-- **Dive**: countdown digits step down, a new prompt drops into place, and a no-echo retry gives the feedback line a small shake and a stamp press.
-- **Results**: the page rises into place, histogram bars grow from their baselines, and dive-log lines drop from the surface. Catch contents expand from the top of the opened row.
+- **Sink**: the selected answer and FigPal accelerate down the tier track and settle over 690–1,315 ms, depending on rarity. Crossed rows flash as the chip passes them. On tall screens, the full FigPal follows the fall below the paper frame. The final row holds its tint and the verdict stamp presses when the chip lands.
+- **Ruler and HUD**: grid and ruler travel up while the answer falls. Selection guides pass at a different speed, and a light blue tint builds with depth. The HUD ticks through intermediate totals and announces the final totals immediately.
+- **Dive**: canvas guides sweep by during the countdown, the FigPal drops into place, and the next paper frame slides up into view. The scoring window stays server-controlled.
+- **Results**: the canvas travels back to the surface while the page rises into place, histogram bars grow from their baselines, and dive-log lines drop from the surface. Catch contents expand from the top of the opened row.
+- **Stamp hover**: on pointer devices, large decorative stamps lift inside a blue selection frame and settle back down on exit. Touch has no hover state, and reduced motion keeps only the frame cue.
+- **Canvas cameos**: the home screen and dive include scripted team cursors, brief typed chat bubbles, and notes that settle at the edges before a stamp lands. Smaller screens use the open FigPal stage. Cameos pause in hidden tabs, and reduced motion shows static name tags and notes.
 - **Leaderboard**: existing rows glide to their new rank using the stable per-game row identity.
+- **Rare reveals**: a blue connector is dragged from the landed answer toward its depth on the tier ladder. It snaps into place after the stamp press.
+- **Surface recap**: the existing score, depth and rank settle into three grouped sticky notes. The totals are readable during the move.
 - **Reduced motion**: all changes take effect immediately, with the same verdict, controls, text, and charts.
 
 ## Browser surfaces

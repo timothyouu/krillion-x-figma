@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { CatchList } from '../../components/CatchList'
+import { DiveCanvas } from '../../components/DiveCanvas'
 import { DiveLog } from '../../components/DiveLog'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { FigButton } from '../../components/FigButton'
@@ -9,6 +10,7 @@ import { Nametag } from '../../components/Nametag'
 import { ScoreCurve } from '../../components/ScoreCurve'
 import { Stamp } from '../../components/Stamp'
 import { LoadingScreen } from '../../components/StatusPanel'
+import { SURFACE_MS } from '../../features/dive/diveMotion'
 import { buildShareText, percentileLine } from '../../features/results/resultsFormat'
 import { useCatch, useResults } from '../../features/results/useResults'
 import { formatDepth, rankTitle } from '../../lib/tiers'
@@ -25,6 +27,8 @@ function Card({ tag, children, className = '' }: { tag: string; children: ReactN
 
 export function ResultsRoute() {
   const navigate = useNavigate()
+  const { state: locationState } = useLocation()
+  const surfacing = locationState?.surfaced === true
   const { state: results, reload } = useResults()
 
   useEffect(() => {
@@ -38,71 +42,86 @@ export function ResultsRoute() {
     if (results.code === 'not_finished' || results.code === 'not_joined') return <LoadingScreen />
     return <ErrorScreen code={results.code} onRetry={reload} />
   }
-  return <ResultsView data={results.data} />
+  return <ResultsView data={results.data} surfacing={surfacing} />
 }
 
-function ResultsView({ data }: { data: ResultsResponse }) {
+function ResultsView({ data, surfacing }: { data: ResultsResponse; surfacing: boolean }) {
   const { player } = data
   const bearing = rankTitle(player.score)
 
   return (
-    <main className="results-surface mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
-      <header className="flex items-center justify-between gap-4">
-        <Link to="/" className="inline-flex min-h-11 items-center font-mono text-[22px] tracking-[0.02em] sm:text-[28px]">
-          FIGILLION
-        </Link>
-        <Link
-          to="/leaderboard"
-          className="inline-flex min-h-11 items-center gap-2 rounded-tag border border-line bg-paper px-3 py-2 text-[15px] font-medium hover:border-select"
-        >
-          <span className="size-2 rounded-full bg-select animate-live" aria-hidden />
-          Live leaderboard
-        </Link>
-      </header>
+    <>
+      {surfacing ? <DiveCanvas depthM={player.depth_m} round={data.rounds.length} duration={SURFACE_MS} surfacing /> : null}
+      <main className="results-surface relative z-10 mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
+        <header className="flex items-center justify-between gap-4">
+          <Link to="/" className="inline-flex min-h-11 items-center font-mono text-[22px] tracking-[0.02em] sm:text-[28px]">
+            FIGILLION
+          </Link>
+          <Link
+            to="/leaderboard"
+            className="inline-flex min-h-11 items-center gap-2 rounded-tag border border-line bg-paper px-3 py-2 text-[15px] font-medium hover:border-select"
+          >
+            <span className="size-2 rounded-full bg-select animate-live" aria-hidden />
+            Live leaderboard
+          </Link>
+        </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <Card tag="Surfaced">
-          <div className="relative flex flex-col gap-6">
-            <Stamp tier={bearing.tier} size={96} rotate={10} press className="absolute -right-2 -top-2 sm:right-0 sm:top-0" />
-            <div className="flex items-center gap-3">
-              <FigPalAvatar slug={player.figpal_slug} width={48} decorative />
-              <span className="text-[18px] text-ink-soft">{player.display_name}</span>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <Card tag="Surfaced">
+            <div className="flex flex-col gap-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <FigPalAvatar slug={player.figpal_slug} width={48} className="shrink-0" decorative />
+                  <span className="min-w-0 wrap-anywhere text-[18px] text-ink-soft">{player.display_name}</span>
+                </div>
+                <Stamp hoverable tier={bearing.tier} size={72} rotate={10} press className="shrink-0" />
+              </div>
+              <dl className="recap-notes" data-surfacing={surfacing}>
+                <div className="recap-note recap-note--score">
+                  <dt>Score</dt>
+                  <dd className="font-mono leading-none">
+                    <span className="text-[clamp(2rem,8vw,4.5rem)] tabular">{player.score}</span>
+                    <span className="text-[clamp(0.875rem,3vw,1.5rem)] text-ink-soft">/{data.max_score}</span>
+                  </dd>
+                </div>
+                <div className="recap-note recap-note--depth">
+                  <dt>Depth</dt>
+                  <dd className="font-mono text-[clamp(1rem,3.6vw,1.375rem)] tabular">{formatDepth(player.depth_m)}</dd>
+                </div>
+                <div className="recap-note recap-note--rank">
+                  <dt>Rank</dt>
+                  <dd className="font-mono text-[clamp(1rem,3.6vw,1.375rem)] tabular">{data.rank} of {data.finished_count}</dd>
+                </div>
+              </dl>
+              <div className="flex flex-col gap-1">
+                <p className="text-[26px] leading-tight sm:text-[32px]">
+                  {bearing.title} <span className="text-ink-soft">{bearing.line}</span>
+                </p>
+                <p className="text-[17px] text-ink-soft sm:text-[19px]">
+                  {percentileLine(data.better_than_pct, data.finished_count)}
+                </p>
+              </div>
+              <CopyResultButton data={data} />
             </div>
-            <div>
-              <p className="font-mono leading-none">
-                <span className="text-[72px] sm:text-[96px] tabular">{player.score}</span>
-                <span className="text-[28px] text-mute sm:text-[40px]">/{data.max_score}</span>
+          </Card>
+
+          <Card tag="Everyone’s dive">
+            <div className="flex h-full flex-col justify-between gap-4">
+              <p className="text-[17px] text-ink-soft">
+                {data.finished_count} {data.finished_count === 1 ? 'diver has' : 'divers have'} surfaced. You are the blue bar.
               </p>
-              <p className="mt-2 font-mono text-[22px] text-ink-soft sm:text-[28px] tabular">{formatDepth(player.depth_m)}</p>
+              <ScoreCurve histogram={data.histogram} score={player.score} maxScore={data.max_score} />
             </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-[26px] leading-tight sm:text-[32px]">
-                {bearing.title} <span className="text-ink-soft">{bearing.line}</span>
-              </p>
-              <p className="text-[17px] text-ink-soft sm:text-[19px]">
-                Rank {data.rank} of {data.finished_count} · {percentileLine(data.better_than_pct, data.finished_count)}
-              </p>
-            </div>
-            <CopyResultButton data={data} />
-          </div>
+          </Card>
+        </div>
+
+        <Card tag="Dive log">
+          <DiveLog rounds={data.rounds} />
         </Card>
 
-        <Card tag="Everyone’s dive">
-          <div className="flex h-full flex-col justify-between gap-4">
-            <p className="text-[17px] text-ink-soft">
-              {data.finished_count} {data.finished_count === 1 ? 'diver has' : 'divers have'} surfaced. You are the blue bar.
-            </p>
-            <ScoreCurve histogram={data.histogram} score={player.score} maxScore={data.max_score} />
-          </div>
-        </Card>
-      </div>
-
-      <Card tag="Dive log">
-        <DiveLog rounds={data.rounds} />
-      </Card>
-
-      <CatchSection data={data} />
-    </main>
+        <CatchSection data={data} />
+      </main>
+    </>
   )
 }
 

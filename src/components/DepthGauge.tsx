@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+import { FALL_CURVE } from '../features/dive/diveMotion'
 import markerSvg from '../assets/brand/marker.svg'
 import { formatDepth } from '../lib/tiers'
 
@@ -10,6 +12,7 @@ const MARKER_TOP = 'min(30dvh, 285px)'
 
 interface DepthGaugeProps {
   depthM: number
+  duration: number
 }
 
 function tickWidth(i: number): number {
@@ -19,7 +22,7 @@ function tickWidth(i: number): number {
 }
 
 /** Right-edge depth ruler. The ruler scrolls up as you sink; the YOU marker stays put. */
-export function DepthGauge({ depthM }: DepthGaugeProps) {
+export function DepthGauge({ depthM, duration }: DepthGaugeProps) {
   const offsetPx = (Math.min(depthM, STEPS * METRES_PER_STEP) / METRES_PER_STEP) * STEP_PX
   return (
     <div
@@ -28,8 +31,8 @@ export function DepthGauge({ depthM }: DepthGaugeProps) {
       aria-label={`Depth ${formatDepth(depthM)}`}
     >
       <div
-        className="absolute left-0 right-0 transition-transform duration-[920ms] ease-[var(--ease-sink)]"
-        style={{ top: MARKER_TOP, transform: `translateY(${-offsetPx}px)` }}
+        className="dive-depth-ruler absolute left-0 right-0"
+        style={{ top: MARKER_TOP, '--ruler-duration': duration + 'ms', '--fall-curve': FALL_CURVE, transform: `translateY(${-offsetPx}px)` } as CSSProperties}
       >
         {/* the rule line extends above the surface and below the trench floor */}
         <div className="absolute right-0 top-[-100vh] h-[calc(200vh+1100px)] w-[2px] bg-mute" />

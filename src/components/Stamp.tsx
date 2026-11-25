@@ -8,6 +8,7 @@ import plusOneStamp from '../assets/stamps/plus-one.png'
 import thumbsUpStamp from '../assets/stamps/thumbs-up.png'
 import thumbsDownStamp from '../assets/stamps/thumbs-down.png'
 import questionStamp from '../assets/stamps/question.png'
+import { SelectionFrame } from './SelectionFrame'
 
 export type StampKind = 'star' | 'heart' | 'dot' | 'plus-one' | 'thumbs-up' | 'thumbs-down' | 'question'
 
@@ -29,23 +30,20 @@ interface StampProps {
   rotate?: number
   /** Play the "pressed onto the canvas" entrance. */
   press?: boolean
+  /** Preview this canvas stamp on hover. It remains decorative, with no click action. */
+  hoverable?: boolean
   label?: string
   className?: string
   style?: CSSProperties
 }
 
 /** Oscar's FigJam-style stamps. Decorative unless given a label. */
-export function Stamp({ tier, kind, size, rotate = 0, press = false, label, className = '', style }: StampProps) {
+export function Stamp({ tier, kind, size, rotate = 0, press = false, hoverable = false, label, className = '', style }: StampProps) {
   let src = kind ? STAMP_SRC[kind] : STAMP_SRC.star
   if (tier === 'no_echo') src = NO_ECHO.stamp
   else if (tier) src = getTier(tier).stamp
-  const stampStyle = {
-    width: size,
-    height: size,
-    rotate: rotate + 'deg',
-    ...style,
-  } as CSSProperties
-  return (
+  const rotation = rotate + 'deg'
+  const image = (
     <img
       src={src}
       alt={label ?? ''}
@@ -53,8 +51,20 @@ export function Stamp({ tier, kind, size, rotate = 0, press = false, label, clas
       width={size}
       height={size}
       draggable={false}
-      className={`pointer-events-none select-none drop-shadow-[0_2px_3px_rgba(0,0,0,0.12)] ${press ? 'animate-stamp' : ''} ${className}`}
-      style={stampStyle}
+      className={`pointer-events-none select-none drop-shadow-[0_2px_3px_rgba(0,0,0,0.12)] ${press ? 'animate-stamp' : ''} ${hoverable ? 'block size-full' : className}`}
+      style={hoverable ? { rotate: rotation } : { width: size, height: size, rotate: rotation, ...style }}
     />
+  )
+  if (!hoverable) return image
+
+  return (
+    <div className={`stamp-preview ${className}`} style={{ width: size, height: size, ...style }}>
+      <div className="stamp-preview__art">
+        {image}
+        <SelectionFrame className="stamp-preview__frame">
+          <span aria-hidden="true" />
+        </SelectionFrame>
+      </div>
+    </div>
   )
 }

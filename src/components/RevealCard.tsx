@@ -1,14 +1,16 @@
 import type { CSSProperties } from 'react'
+import { sinkDurationMs } from '../features/dive/diveMotion'
 import type { RevealData } from '../features/dive/diveMachine'
 import { formatDepth, getTier } from '../lib/tiers'
 import { Nametag } from './Nametag'
 import { Stamp } from './Stamp'
-import { TierLadder, sinkDurationMs } from './TierLadder'
+import { TierLadder } from './TierLadder'
 
 interface RevealCardProps {
   reveal: RevealData
   roundCount: number
   promptText: string | null
+  figpalSlug?: string
 }
 
 function normalize(text: string | null): string {
@@ -16,31 +18,32 @@ function normalize(text: string | null): string {
 }
 
 /** Per-answer reveal: the sinking ladder on the left, the verdict on the right. */
-export function RevealCard({ reveal, roundCount, promptText }: RevealCardProps) {
+export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy' }: RevealCardProps) {
   const landed = reveal.accepted && reveal.tier !== null
   const tier = landed && reveal.tier ? getTier(reveal.tier) : null
   const stampMotion = { '--stamp-delay': sinkDurationMs(reveal.tier) + 'ms' } as CSSProperties
   const typedDifferently = landed && reveal.yourInput && normalize(reveal.yourInput) !== normalize(reveal.answer)
 
   return (
-    <section className="flex w-full flex-col gap-[5px]" aria-labelledby="reveal-title">
+    <section className="dive-reveal flex w-full flex-col gap-[5px]" aria-labelledby="reveal-title">
       <Nametag>
         Prompt {reveal.round} of {roundCount}
         <span className="font-normal text-ink-soft">&nbsp;·&nbsp;{landed ? 'landed' : 'surfaced empty'}</span>
       </Nametag>
-      <div className="grid w-full gap-6 border border-line bg-paper px-4 py-5 sm:px-10 sm:py-9 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-8 lg:px-14">
+      <div className="grid w-full gap-5 border border-line bg-paper px-4 py-5 sm:px-10 sm:py-9 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-8 lg:px-14">
         <div className="flex min-w-0 flex-col gap-4">
           {promptText ? <p className="font-mono text-[16px] text-ink-soft sm:text-[18px]">{promptText}</p> : null}
-          <TierLadder tier={landed ? reveal.tier : null} chipText={landed ? (reveal.answer ?? '') : 'nothing landed'} />
+          <TierLadder figpalSlug={figpalSlug} tier={landed ? reveal.tier : null} chipText={landed ? (reveal.answer ?? '') : 'nothing landed'} />
         </div>
 
-        <div className="order-first flex min-w-0 flex-col justify-center gap-3 md:order-none md:gap-4" aria-live="polite">
+        <div className="flex min-w-0 flex-col justify-center gap-3 md:gap-4" aria-live="polite">
           <div className="flex items-center gap-3 sm:gap-4">
             <Stamp
               tier={tier ? tier.key : 'no_echo'}
               size={80}
               rotate={tier ? -8 : 10}
               press
+              hoverable
               style={stampMotion}
               label={tier ? tier.label : 'Nothing landed'}
               className="size-14! shrink-0 sm:size-20!"

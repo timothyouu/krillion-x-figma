@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CanvasCameos, useCanvasCameos } from '../../components/CanvasCameos'
 import { FigButton } from '../../components/FigButton'
 import { FigPalAvatar } from '../../components/FigPalAvatar'
 import { FigPalPicker } from '../../components/FigPalPicker'
@@ -21,6 +22,7 @@ type Boot = { status: 'loading' } | { status: 'ready'; game: GameInfo | null; pl
 /** Home (106:9171) and FigPal selection (10:8249): name, FigPal, Begin Descent. */
 export function HomeRoute() {
   const navigate = useNavigate()
+  const cameos = useCanvasCameos('home')
   const [boot, setBoot] = useState<Boot>({ status: 'loading' })
   const [name, setName] = useState(() => loadDraft().name)
   const [figpal, setFigpal] = useState(() => loadDraft().figpal ?? DEFAULT_FIGPAL)
@@ -102,6 +104,7 @@ export function HomeRoute() {
   return (
     <main className="relative mx-auto min-h-[var(--app-safe-height)] w-full max-w-[1280px] overflow-hidden px-4 sm:px-8">
       <HomeStickers pickerOpen={pickerOpen} />
+      {!pickerOpen ? <CanvasCameos scene="home" layout="margins" {...cameos} /> : null}
 
       <div
         className={`relative z-10 mx-auto flex min-h-[var(--app-safe-height)] w-full flex-col items-center py-10 xl:py-0 ${
@@ -121,8 +124,9 @@ export function HomeRoute() {
           </header>
 
           <form onSubmit={begin} className={`flex w-full flex-col items-center ${pickerOpen ? 'xl:pt-[260px]' : ''}`} noValidate>
-            <div className="mt-5 sm:mt-14 xl:mt-[62px]">
+            <div className="relative mt-5 w-full sm:mt-14 xl:mt-[62px]">
               <FigPalStage slug={figpal} />
+              {!pickerOpen ? <CanvasCameos scene="home" layout="compact" {...cameos} /> : null}
             </div>
 
             <div className="mt-2 flex w-full max-w-[420px] flex-col items-center gap-4 sm:mt-0 sm:gap-6">
@@ -197,13 +201,13 @@ function HomeStickers({ pickerOpen }: { pickerOpen: boolean }) {
     )
   }
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 hidden md:block">
-      <Stamp kind="question" size={88} rotate={-10} className="absolute left-[7%] top-[104px] xl:left-[258px] xl:top-[110px]" />
-      <Stamp kind="star" size={84} rotate={8} className="absolute left-[2%] top-[176px] xl:left-[333px] xl:top-[180px]" />
-      <Stamp kind="plus-one" size={66} rotate={-6} className="absolute left-[9%] top-[233px] xl:left-[138px] xl:top-[218px]" />
-      <Stamp kind="heart" size={88} rotate={14} className="absolute right-[6%] top-[128px] xl:left-[858px] xl:right-auto xl:top-[118px]" />
-      <Stamp kind="thumbs-up" size={78} rotate={-8} className="absolute right-[5%] top-[221px] xl:left-[970px] xl:right-auto xl:top-[198px]" />
-      <Stamp kind="dot" size={74} rotate={0} className="absolute right-[1%] top-[176px] xl:left-[1080px] xl:right-auto xl:top-[160px]" />
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-[11] hidden md:block">
+      <Stamp hoverable kind="question" size={88} rotate={-10} className="absolute left-[7%] top-[104px] xl:left-[258px] xl:top-[110px]" />
+      <Stamp hoverable kind="star" size={84} rotate={8} className="absolute left-[2%] top-[176px] xl:left-[333px] xl:top-[180px]" />
+      <Stamp hoverable kind="plus-one" size={66} rotate={-6} className="absolute left-[9%] top-[233px] xl:left-[138px] xl:top-[218px]" />
+      <Stamp hoverable kind="heart" size={88} rotate={14} className="absolute right-[6%] top-[128px] xl:left-[858px] xl:right-auto xl:top-[118px]" />
+      <Stamp hoverable kind="thumbs-up" size={78} rotate={-8} className="absolute right-[5%] top-[221px] xl:left-[970px] xl:right-auto xl:top-[198px]" />
+      <Stamp hoverable kind="dot" size={74} rotate={0} className="absolute right-[1%] top-[176px] xl:left-[1080px] xl:right-auto xl:top-[160px]" />
     </div>
   )
 }

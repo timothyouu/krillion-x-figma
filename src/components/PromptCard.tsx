@@ -32,9 +32,9 @@ export function PromptCard({ round, roundCount, theme, text, subline }: PromptCa
           </p>
         </div>
         <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[230px] md:block [@media(max-height:520px)]:hidden" aria-hidden>
-          <Stamp kind="star" size={100} rotate={8} className="absolute right-[-17px] top-[14px]" />
-          <Stamp kind="dot" size={149} className="absolute right-[14px] top-[113px]" />
-          <Stamp kind="heart" size={128} rotate={-12} className="absolute right-[75px] top-[109px]" />
+          <Stamp hoverable kind="star" size={100} rotate={8} className="absolute right-[-17px] top-[14px]" />
+          <Stamp hoverable kind="dot" size={149} className="absolute right-[14px] top-[113px]" />
+          <Stamp hoverable kind="heart" size={128} rotate={-12} className="absolute right-[75px] top-[109px]" />
         </div>
       </div>
     </section>
