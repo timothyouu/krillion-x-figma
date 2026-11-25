@@ -2,7 +2,7 @@
 
 This is everything needed to get the backend ready for a playable game **today (Nov 24)**, then for Ankita's real content and Dec 8. The full design is in [specs.md](specs.md) (sections 4, 5 and 9).
 
-The database is already written: [`supabase/migrations/20261124000000_figillion_init.sql`](supabase/migrations/20261124000000_figillion_init.sql). Your job is to create the project, run it, switch on anonymous sign-ins, and send Timothy two values. Read through the migration before running it; anything you'd change, tell Timothy so the spec stays in sync.
+Start with [`supabase/migrations/20261124000000_figillion_init.sql`](supabase/migrations/20261124000000_figillion_init.sql) and apply the follow-up migration in section 3. Then switch on anonymous sign-ins and send Timothy the two values in section 5. Review the SQL before running it. Tell Timothy about any changes so the spec stays in sync.
 
 ---
 
@@ -28,14 +28,14 @@ Pick one:
 
 **Option A: SQL Editor (no tools needed)**
 1. Open **SQL Editor → New query**.
-2. Paste the whole migration file and **Run**. It should finish with "Success. No rows returned".
-3. New query: paste [`supabase/seed.sql`](supabase/seed.sql) and **Run**. It creates the `practice` game with 5 generic prompts and returns a summary like `{"game": "practice", "rounds": [...]}`.
+2. On a fresh project, run the [initial migration](supabase/migrations/20261124000000_figillion_init.sql), then the [answer-window migration](supabase/migrations/20261125025004_enforce_prompt_answer_window.sql). On an existing project, apply the pending migration only.
+3. For a fresh practice database, paste [`supabase/seed.sql`](supabase/seed.sql) and **Run**. It creates the `practice` game with 5 generic prompts and returns a summary like `{"game": "practice", "rounds": [...]}`.
 
 **Option B: Supabase CLI**
 ```bash
 supabase link --project-ref <project-ref>
 supabase db push                 # applies supabase/migrations
-psql "<connection string>" -f supabase/seed.sql
+psql "<connection string>" -f supabase/seed.sql  # fresh practice database only
 ```
 
 What it creates:
@@ -47,6 +47,14 @@ What it creates:
 | `private` | `prompts`, `accepted_answers`, `players`, `player_rounds`, `attempts` | No. The schema isn't exposed by the API at all |
 | `public` | 8 RPCs: `get_my_progress`, `join_game`, `start_prompt`, `submit_answer`, `finish_prompt`, `get_results`, `get_catch`, `get_leaderboard` | Yes, the only way in |
 | `private` | `publish_import()` and helpers | No. You run `publish_import` from the SQL Editor |
+
+### Answer-window fix for an existing project
+
+Apply [migration 20261125025004](supabase/migrations/20261125025004_enforce_prompt_answer_window.sql) before deploying the matching frontend. If you already ran the initial migration, this SQL file is the only Supabase change needed for the timer fix. It replaces four RPC definitions and preserves existing prompts, answers, scores, and round deadlines.
+
+On the updated frontend, the countdown runs before the browser requests the prompt. The server starts the game’s configured answer window when it sends the prompt. For the standard 25-second round, it accepts answers from `clock_starts_at` up to but excluding `deadline`. Timeout can resolve at that same deadline. Refreshing after the prompt appears keeps the existing deadline.
+
+After deploying both parts, play a fresh `practice` dive. Confirm that the countdown shows no question, the question appears when the timer starts at 25, and a refresh during that prompt shows the remaining time. Let one round expire and confirm it scores zero.
 
 ## 4. Check it's locked down (5 min)
 
@@ -168,8 +176,9 @@ The RPCs raise these exact messages; Timothy's UI maps them to screens or toasts
 | `invalid_display_name` / `invalid_figpal` | Name not 1–24 chars / bad FigPal slug |
 | `invalid_round` / `round_out_of_order` / `round_in_progress` | Client asked for the wrong round |
 | `round_not_started` / `round_already_resolved` | Submitting to a round that isn't active |
-| `time_up` | Submitted more than 2 s after the deadline; the client should call `finish_prompt` |
-| `time_not_up` | `finish_prompt` called too early |
+| `round_not_open` | Submitted before the stored answer window opened. The client resyncs progress. |
+| `time_up` | Submitted at or after the deadline. The client can call `finish_prompt`. |
+| `time_not_up` | `finish_prompt` was called before the answer deadline. |
 | `too_many_attempts` | 30 tries on one prompt |
 | `not_finished` | Results or Catch requested before the dive is done |
 
@@ -179,6 +188,12 @@ The RPCs raise these exact messages; Timothy's UI maps them to screens or toasts
 
 ```bash
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/smoke.sql
+```
+
+For the timer fix specifically, run [the answer-window regression test](supabase/tests/answer_window.sql) on the local practice seed after applying both migrations. It rolls back its test data and prints `ANSWER WINDOW CHECKS PASSED`. It checks prompt redaction during a preserved countdown, a fixed 25-second window, deadline reuse, rejection outside the window, and normal scoring inside it.
+
+```bash
+docker exec -i supabase_db_figillion psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/answer_window.sql
 ```
 
 On plain Postgres, run [`supabase/tests/local_stubs.sql`](supabase/tests/local_stubs.sql) first. It creates stand-ins for Supabase's `auth` schema and roles. A clean run ends with `ALL SMOKE CHECKS PASSED`.

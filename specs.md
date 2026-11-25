@@ -47,7 +47,7 @@ I played a full Unlimited dive on krillion.io in Chrome and read the official ho
 ## 3. Game rules (Figillion)
 
 1. **Join:** open the link, type a display name, pick a FigPal, press **Begin Descent**.
-2. **5 prompts**, one per themed round, **25 seconds each**, with a 3-second "descending" countdown before each clock starts.
+2. **5 prompts**, one per themed round, **25 seconds each**, with a 3-second "descending" countdown before the prompt is revealed and its clock starts.
 3. **One scored answer per prompt.** Rejected answers show the "no echo" message and can be retried until time runs out. The first accepted answer locks the prompt.
 4. **Reveal** after each prompt (accepted or timed out), then **Descend** for the next one, or **Surface** after prompt 5.
 5. **One dive per player.** No replays.
@@ -100,9 +100,9 @@ Each step shows what the client calls and where the data comes from or goes. "RP
      ├ already finished → /results
      └ mid-dive → resume at current prompt
  4 Home: name + FigPal → join_game(...) ─────────────────────▶ players (insert)
- 5 Begin Descent / Descend → start_prompt(round) ────────────▶ prompt_starts (insert, server time)
+ 5 Descent countdown ends → start_prompt(round) ────────────▶ prompt_starts (insert, server time)
      ◀── { prompt text, theme, round, deadline }  ◀────────── prompts (read inside RPC only)
-     3 s countdown, then 25 s clock (client display only)
+     Prompt arrives with the server’s 25 s scoring window already open
  6 Dive → submit_answer(round, text) ───────────────────────▶ accepted_answers (read inside RPC only)
      ├ no match → { accepted:false }  → "no echo. try again"   (attempt logged to submissions)
      └ match    → { tier, points, depth, canonical answer }  → submissions (scored row)
@@ -117,7 +117,7 @@ Each step shows what the client calls and where the data comes from or goes. "RP
 
 Rules the server enforces (the client only displays):
 - `start_prompt` only serves rounds in order and is idempotent: calling it again returns the original deadline, so refreshing doesn't reset the clock.
-- `submit_answer` rejects anything after `deadline + 2 s` grace and anything for a round already scored.
+- The server only accepts answers from `clock_starts_at` up to but excluding `deadline`. The round may time out once that same deadline is reached.
 - `get_catch` returns nothing until `players.finished_at` is set.
 
 ## 5. Where everything is stored
@@ -303,9 +303,9 @@ private.attempts         id, player_round_id, raw_answer, normalized, matched_an
 |---|---|---|
 | `get_my_progress(game_slug)` | game status, joined?, current round, score, depth, finished? | Works before joining. |
 | `join_game(game_slug, display_name, figpal_slug)` | player | Game open; one player row per anon user. |
-| `start_prompt(game_slug, round)` | round, theme, text, `deadline` | Previous round resolved; idempotent; `deadline = now() + countdown + 25 s`. |
-| `submit_answer(game_slug, round, answer)` | `accepted`, and if accepted: tier, points, canonical answer, total score, depth | Before `deadline + 2 s`; round not already resolved; matching per 3.2. |
-| `finish_prompt(game_slug, round)` | same shape with 0 points | Only after the deadline with no accepted answer. Sets `finished_at` after round 5. |
+| `start_prompt(game_slug, round)` | round, theme, text, `deadline` | Previous round resolved. The first call reveals the prompt and starts the 25 s clock. Later calls keep the stored deadline. |
+| `submit_answer(game_slug, round, answer)` | `accepted`, and if accepted: tier, points, canonical answer, total score, depth | During the server’s scoring window for an unresolved round. Matching per 3.2. |
+| `finish_prompt(game_slug, round)` | same shape with 0 points | At or after the deadline with no accepted answer. Sets `finished_at` after round 5. |
 | `get_results(game_slug)` | score, depth, rank, total players, percentile, score histogram (20 buckets), per-round answer/tier/points | Only when finished. |
 | `get_catch(game_slug)` | every round's accepted answers with points, figlion first with fun fact | Only when finished. |
 | `get_leaderboard(game_slug, limit 25)` | ranked rows, counts (total, finished, diving), and `me` (your rank) when signed in | Public. Max 100 rows. |
