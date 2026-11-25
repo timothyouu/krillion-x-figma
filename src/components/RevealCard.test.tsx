@@ -23,7 +23,20 @@ describe('RevealCard', () => {
     expect(screen.getByText(/\+85 pts/i)).toBeInTheDocument()
     expect(screen.getByText(/sink 850 m/)).toBeInTheDocument()
     expect(screen.getByText('Seriously deep in the docs.')).toBeInTheDocument()
-    expect(screen.getByText(/answr_placeholder/)).toBeInTheDocument()
+    expect(screen.getByText(/Autocorrected from/)).toHaveTextContent('answr_placeholder')
+  })
+
+  it('autocorrects the typed text into the accepted answer on the chip', () => {
+    const { container } = render(<RevealCard reveal={landed} roundCount={5} promptText={null} />)
+    expect(container.querySelector('.chip-autocorrect__typed')?.textContent).toBe('answr_placeholder')
+    expect(container.querySelector('.chip-autocorrect__fixed')?.textContent).toBe('ANSWER_PLACEHOLDER')
+    expect(screen.getByText(/Autocorrected from/)).toBeInTheDocument()
+  })
+
+  it('does not autocorrect when only the letter case differs', () => {
+    const { container } = render(<RevealCard reveal={{ ...landed, yourInput: 'answer_placeholder' }} roundCount={5} promptText={null} />)
+    expect(container.querySelector('.chip-autocorrect')).toBeNull()
+    expect(screen.queryByText(/Autocorrected from/)).toBeNull()
   })
 
   it('announces a landed verdict when the chip lands, not while it falls', () => {

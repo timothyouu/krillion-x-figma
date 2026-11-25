@@ -9,10 +9,12 @@ import { Stamp } from './Stamp'
 interface TierLadderProps {
   tier: TierKey | null
   chipText: string
+  /** What the player typed, when the server matched it to a differently spelled answer. */
+  typedText?: string | null
   figpalSlug: string
 }
 
-export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
+export function TierLadder({ tier, chipText, typedText = null, figpalSlug }: TierLadderProps) {
   const index = TIERS.findIndex((entry) => entry.key === tier)
   const duration = sinkDurationMs(tier)
   const chip = useRef<HTMLDivElement>(null)
@@ -21,6 +23,8 @@ export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
     '--sink-steps': Math.max(0, index + 1),
     '--sink-duration': duration + 'ms',
     '--fall-curve': FALL_CURVE,
+    // Krillion-style autocorrect: the typed text corrects itself once the chip reaches the surface row.
+    '--autocorrect-at': pickupTravelMs(duration) + 'ms',
   } as CSSProperties
 
   return (
@@ -64,7 +68,14 @@ export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
           <SelectionFrame className="w-fit max-w-full">
             <span className="flex min-w-0 items-center gap-0.5 bg-paper px-1.5 py-0.5 font-mono text-[13px] leading-[20px] sm:gap-1.5 sm:text-[15px]" title={chipText}>
               {tier ? <FigPalAvatar slug={figpalSlug} width={20} className="shrink-0" decorative /> : null}
-              <span className="truncate">{chipText}</span>
+              {typedText ? (
+                <span className="chip-autocorrect">
+                  <span className="chip-autocorrect__typed truncate">{typedText}</span>
+                  <span className="chip-autocorrect__fixed truncate">{chipText}</span>
+                </span>
+              ) : (
+                <span className="truncate">{chipText}</span>
+              )}
             </span>
           </SelectionFrame>
         </div>

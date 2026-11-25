@@ -54,7 +54,12 @@ export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy
       >
         <div className="flex min-w-0 flex-col gap-4">
           {promptText ? <p className="font-mono text-[16px] text-ink-soft sm:text-[18px]">{promptText}</p> : null}
-          <TierLadder figpalSlug={figpalSlug} tier={landed ? reveal.tier : null} chipText={landed ? (reveal.answer ?? '') : 'nothing landed'} />
+          <TierLadder
+            figpalSlug={figpalSlug}
+            tier={landed ? reveal.tier : null}
+            chipText={landed ? (reveal.answer ?? '') : 'nothing landed'}
+            typedText={typedDifferently ? reveal.yourInput : null}
+          />
         </div>
 
         <div className="reveal-verdict relative flex min-w-0 flex-col justify-center gap-3 md:gap-4" data-holding={landMs > 0 || undefined}>
@@ -97,7 +102,7 @@ export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy
           ) : null}
           {typedDifferently ? (
             <p className="reveal-line text-[15px] text-ink-soft" style={lineDelay(3)}>
-              You typed <span className="font-mono text-ink">“{reveal.yourInput}”</span>
+              Autocorrected from <span className="font-mono text-ink">“{reveal.yourInput}”</span>
             </p>
           ) : null}
         </div>

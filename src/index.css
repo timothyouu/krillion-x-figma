@@ -406,6 +406,41 @@
   animation: answer-snapback 260ms linear forwards;
 }
 
+/* ---------- Reveal chip: Krillion-style autocorrect ---------- */
+
+@keyframes chip-typed-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-5px); }
+}
+
+@keyframes chip-fixed-in {
+  from { opacity: 0; transform: translateY(5px); background-color: var(--color-select-ice); }
+  40% { opacity: 1; transform: none; background-color: var(--color-select-ice); }
+  to { opacity: 1; transform: none; background-color: transparent; }
+}
+
+.chip-autocorrect {
+  display: grid;
+  min-width: 0;
+}
+
+.chip-autocorrect > * {
+  grid-area: 1 / 1;
+}
+
+/* Resting state is the corrected answer, so reduced motion shows it straight away. */
+.chip-autocorrect__typed {
+  opacity: 0;
+  text-decoration: underline wavy #f24e1e;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+  animation: chip-typed-out 140ms ease-in var(--autocorrect-at) both;
+}
+
+.chip-autocorrect__fixed {
+  animation: chip-fixed-in 420ms ease-out calc(var(--autocorrect-at) + 70ms) both;
+}
+
 .answer-box--urgent .selection-handle {
   animation: handle-pulse 1s ease-in-out infinite;
 }
