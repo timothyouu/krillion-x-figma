@@ -4,7 +4,23 @@ Source of truth: Oscar's section in Figma file `QLmoeEgdhjwgqjQhcbopeq` (home 10
 
 ## The world in one line
 
-The game is played **on a Figma canvas**: light gray grid, white frames with nametag tabs, FigJam stamps stuck on top, the blue selection box marking whatever is active, and a ruler down the right edge that measures how deep you are.
+The game is played **on a Figma canvas**: light gray grid, white frames with nametag tabs, FigJam stamps stuck on top, the blue selection box marking whatever is active, and a ruler down the right edge that measures how far down the board you have panned.
+
+## Vocabulary
+
+Players pan across a FigJam board, not dive through an ocean. Player-facing copy uses this map; code names (`DiveRoute`, `depth_m`, the `/dive` URL) keep their original names.
+
+| Moment | Copy |
+|---|---|
+| Start / resume | Start panning / Keep panning |
+| Between rounds | Pan deeper |
+| Countdown card | Panning… |
+| Last round button | Zoom to fit (FigJam's view of the whole board) |
+| Finished | zoomed out |
+| Distance | canvas pixels, 10 px per point, e.g. `pan 850 px` |
+| Wrong answer | "not on the board. try again" |
+| All accepted answers | The Board |
+| Players in progress | still panning |
 
 ## Color
 
@@ -56,7 +72,7 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 - **Nametag** (83:5286) → `Nametag`: white tab with 1 px `line` border, 5 px radius; `select` tone is the blue FigPal name chip.
 - **Card**: nametag tab, 5 px gap, white frame with 1 px `line` border, square corners, generous padding (64 px desktop).
-- **Button** (116:2294) → `FigButton`: `select` fill, `select-deep` edge, 8 px radius, 12 px padding, mono caps; arrows both sides (Begin Descent / Descend / Surface) or trailing enter glyph (Enter).
+- **Button** (116:2294) → `FigButton`: `select` fill, `select-deep` edge, 8 px radius, 12 px padding, mono caps; arrows both sides (Start Panning / Pan Deeper / Zoom to Fit) or trailing enter glyph (Enter).
 - **Selection frame** → `SelectionFrame`: 2 px `select` border with four 8 px square handles. Marks the one active thing: the answer box, the name box, the chosen FigPal, your row in the Catch, your row on the leaderboard.
 - **Timer** (108:12992) → `Timer`: white pill, seven-segment digits. Blue during the 3 s countdown, orange in the last 5 s.
 - **Answer box + progress** (108:11973, 108:11975) → `AnswerInput`.
@@ -67,8 +83,8 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 ## Screens Oscar did not draw
 
 - **Reveal** (`RevealCard`, `TierLadder`): same card as the prompt. Left, a ladder of the six tiers (stamp + word + points + depth) under a "surface" line; the answer rides down in a selection frame and stops on its tier, which tints with the tier color. Right, the tier stamp presses on beside the word-mark, `+N PTS · sink N m`, the description, and "Autocorrected from …" when the server matched a different spelling. As in Krillion, the answer chip first shows exactly what you typed with a red squiggle, then corrects itself into the accepted answer as it reaches the surface row (reduced motion shows the corrected answer straight away). A miss keeps the chip at the surface: "nothing landed · +0 PTS · the clock beat you to it."
-- **No echo**: thumbs-down stamp pressed beside `"input": no echo. try again`, directly above the answer box.
-- **Results**: nametagged cards on the canvas. Surfaced (score/500, depth, The Bearing with its tier stamp, rank, percentile, Copy result), Everyone's dive (20-bucket histogram, your bar in `select` under a YOU tag), Dive log (each prompt is a line dropped from the surface to its depth, ending in its stamp), The Catch (accordion; every accepted answer, figlion first with its fun fact; yours in a selection frame with a "you" chip).
+- **No echo**: thumbs-down stamp pressed beside `"input": not on the board. try again`, directly above the answer box.
+- **Results**: nametagged cards on the canvas. Zoomed out (score/500, depth in px, The Bearing with its tier stamp, rank, percentile, Copy result), Everyone's pan (20-bucket histogram, your bar in `select` under a YOU tag), Pan log (each prompt is a line dropped from the top of the board to its depth, ending in its stamp), The Board (accordion; every accepted answer, figlion first with its fun fact; yours in a selection frame with a "you" chip).
 - **Leaderboard**: projector scale. Big mono title, three counters (divers, surfaced, still diving with a live dot), white rows: rank (top three on star / heart / thumbs-up stamps), FigPal, name, surfaced or "diving 3/5", depth bar, big mono score.
 - **Closed / upcoming / error / config / 404**: one `StatusPanel`: a FigPal off its spotlight, a nametagged card, a mono headline, a plain next step.
 
@@ -91,7 +107,7 @@ The main reveal is a descent through the Figma canvas. The paper frames and sele
 - **Dive**: the 760 ms descent pans and zooms the grid while two FigJam groups sweep past. The near group holds your last catch: a sticky with the answer and its theme (or "nothing landed"), that tier's stamp, and a comment signed by one of the crew whose cursors roam the canvas, in that cursor's colour. The far group shows "Prompt N of 5" and your depth so far. The two groups pick their arrangements independently, so each dive sees five layouts of each with a different pairing every round. On phones only the near group shows, centred, drifting through the open band between the card and the answer box; phones shorter than 700 px skip the board. The snap is the main event: the countdown card ("Descending…") slides up, pink alignment guides flash, and the blue selection pops on with its handles and a size badge (for example 882 × 237). The selection holds until the prompt arrives. The answer field reads GET READY. Reduced motion hides the board and guides; the selection and badge fade in over 240 ms and hold. The scoring window stays server-controlled.
 - **Results**: the canvas travels back to the surface while the page rises into place (transform only, so the compositor never blends the whole page), histogram bars grow from their baselines, and dive-log lines drop from the surface. The results route, results, and Catch are fetched during the last reveal, so Surface goes straight to the rising page without a loading screen. Catch contents expand from the top of the opened row.
 - **Stamp hover**: on pointer devices, large decorative stamps lift inside a blue selection frame and settle back down on exit. Touch has no hover state, and reduced motion keeps only the frame cue.
-- **Canvas cursors**: named team cursors follow varied paths in the margins on wide layouts and around the FigPal stage on smaller screens. Each cursor varies its pace and direction independently. Hidden tabs pause the cursors, and reduced motion shows stationary cursors. On home and during a dive, mouse and trackpad pointers show the player’s nickname over the canvas. Several quick side-to-side waves switch the player’s arrow to a hand. A nearby roaming cursor responds with its own hand. At contact, as in FigJam, both palms merge at the midpoint and grow to about 2.4× over a white halo with burst lines and stars (90 ms in, held to 330 ms), then shrink back under each cursor by 480 ms. Both cursors stay in hand mode for another high five once they pull apart; the partner lowers its hand with a small wave. On touch, press and hold a roaming cursor for 350 ms to high five it. A nearby cursor also reacts to confirmed guesses with the matching tier stamp, or a small shake and thumbs-down for no echo. During the timed question on tablet and phone, the cursors step out to the edges and return for the reveal. Reduced motion keeps each pose stationary and shows the merged palms as a still badge for 400 ms.
+- **Canvas cursors**: named team cursors follow varied paths in the margins on wide layouts and around the FigPal stage on smaller screens. Each cursor varies its pace and direction independently. Hidden tabs pause the cursors, and reduced motion shows stationary cursors. On home and during a dive, mouse and trackpad pointers show the player’s nickname over the canvas. As in Figma, the arrow and nickname stay over buttons, links and the FigPal instead of turning into a pointing hand, and the hovered object gets a 1 px blue outline 2 px out (keyboard focus keeps its 2 px ring). Text boxes switch to Figma's black I-beam with a white edge and hide the nickname. High fives only start on open canvas. Several quick side-to-side waves switch the player’s arrow to a hand. A nearby roaming cursor responds with its own hand. At contact, as in FigJam, both palms merge at the midpoint and grow to about 2.4× over a white halo with burst lines and stars (90 ms in, held to 330 ms), then shrink back under each cursor by 480 ms. Both cursors stay in hand mode for another high five once they pull apart; the partner lowers its hand with a small wave. On touch, press and hold a roaming cursor for 350 ms to high five it. A nearby cursor also reacts to confirmed guesses with the matching tier stamp, or a small shake and thumbs-down for no echo. During the timed question on tablet and phone, the cursors step out to the edges and return for the reveal. Reduced motion keeps each pose stationary and shows the merged palms as a still badge for 400 ms.
 - **Leaderboard**: existing rows glide to their new rank using the stable per-game row identity.
 - **Rare reveals**: a blue connector is dragged from the landed answer toward its depth on the tier ladder. It snaps into place after the stamp press.
 - **Surface recap**: the existing score, depth and rank settle into three grouped sticky notes. The totals are readable during the move.
