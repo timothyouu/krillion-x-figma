@@ -43,12 +43,12 @@ export function TierLadder({ tier, chipText }: TierLadderProps) {
           return (
             <li
               key={t.key}
-              className="relative isolate grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-dashed border-line pl-[35%] pr-1"
+              className="relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-dashed border-line pl-[33%] pr-1 lg:grid-cols-[minmax(0,1fr)_auto_66px] lg:gap-3 lg:pl-[35%]"
               style={{ height: ROW_PX }}
             >
               {isHit ? <span className="tier-landing absolute inset-0 -z-10" style={{ backgroundColor: t.color + '2e' }} /> : null}
-              <span className="flex min-w-0 items-center gap-2.5">
-                <Stamp tier={t.key} size={28} className={`shrink-0 ${isHit ? '' : 'opacity-55'}`} />
+              <span className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
+                <Stamp tier={t.key} size={28} className={`size-[22px]! shrink-0 sm:size-7! ${isHit ? '' : 'opacity-55'}`} />
                 <span className={`truncate text-[16px] leading-tight sm:text-[18px] lg:text-[20px] ${isHit ? 'text-ink' : 'text-ink-soft'}`}>
                   {t.word}
                 </span>
@@ -61,7 +61,7 @@ export function TierLadder({ tier, chipText }: TierLadderProps) {
           )
         })}
       </ol>
-      <div className={'absolute left-0 top-[6px] w-[33%] ' + (index < 0 ? '' : 'tier-sink')}>
+      <div className={'absolute left-0 top-[6px] w-[31%] lg:w-[33%] ' + (index < 0 ? '' : 'tier-sink')}>
         <SelectionFrame className="w-fit max-w-full">
           <span className="block truncate bg-paper px-2.5 py-1 font-mono text-[15px] leading-[22px] sm:text-[17px]" title={chipText}>
             {chipText}

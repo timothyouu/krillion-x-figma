@@ -1,10 +1,10 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
 import arrowDown from '../assets/brand/arrow-down.svg'
 import enterArrow from '../assets/brand/enter-arrow.svg'
 
 type Icon = 'down' | 'up' | 'enter' | 'none'
 
-interface FigButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface FigButtonProps extends ComponentPropsWithRef<'button'> {
   children: ReactNode
   /** Oscar's two button variants: arrows both sides (Default) or a trailing enter glyph (Variant2). */
   icon?: Icon

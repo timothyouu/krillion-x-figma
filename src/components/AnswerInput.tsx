@@ -35,7 +35,7 @@ export function AnswerInput({ resetKey, disabled, checking, seconds, pending, fr
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full items-center gap-3 sm:gap-4" aria-busy={checking}>
+    <form onSubmit={handleSubmit} className="flex w-full items-center gap-3 sm:gap-4 max-[359px]:grid max-[359px]:grid-cols-[auto_minmax(0,1fr)]" aria-busy={checking}>
       <Timer seconds={seconds} pending={pending} />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <SelectionFrame className="w-full">
@@ -67,7 +67,7 @@ export function AnswerInput({ resetKey, disabled, checking, seconds, pending, fr
           />
         </div>
       </div>
-      <FigButton type="submit" icon="enter" disabled={disabled} className="shrink-0">
+      <FigButton type="submit" icon="enter" disabled={disabled} className="shrink-0 max-[359px]:col-start-2 max-[359px]:justify-self-end">
         {checking ? 'Wait' : 'Enter'}
       </FigButton>
     </form>

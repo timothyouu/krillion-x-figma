@@ -28,14 +28,14 @@ export function RevealCard({ reveal, roundCount, promptText }: RevealCardProps) 
         Prompt {reveal.round} of {roundCount}
         <span className="font-normal text-ink-soft">&nbsp;·&nbsp;{landed ? 'landed' : 'surfaced empty'}</span>
       </Nametag>
-      <div className="grid w-full gap-8 border border-line bg-paper px-6 py-7 sm:px-10 sm:py-9 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-8 lg:px-14">
+      <div className="grid w-full gap-6 border border-line bg-paper px-4 py-5 sm:px-10 sm:py-9 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-8 lg:px-14">
         <div className="flex min-w-0 flex-col gap-4">
           {promptText ? <p className="font-mono text-[16px] text-ink-soft sm:text-[18px]">{promptText}</p> : null}
           <TierLadder tier={landed ? reveal.tier : null} chipText={landed ? (reveal.answer ?? '') : 'nothing landed'} />
         </div>
 
-        <div className="flex min-w-0 flex-col justify-center gap-4" aria-live="polite">
-          <div className="flex items-center gap-4">
+        <div className="order-first flex min-w-0 flex-col justify-center gap-3 md:order-none md:gap-4" aria-live="polite">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Stamp
               tier={tier ? tier.key : 'no_echo'}
               size={80}
@@ -43,9 +43,9 @@ export function RevealCard({ reveal, roundCount, promptText }: RevealCardProps) 
               press
               style={stampMotion}
               label={tier ? tier.label : 'Nothing landed'}
-              className="shrink-0"
+              className="size-14! shrink-0 sm:size-20!"
             />
-            <h2 id="reveal-title" className="text-[34px] leading-[1.05] sm:text-[40px]">
+            <h2 id="reveal-title" className="min-w-0 text-[clamp(1.75rem,8vw,2.125rem)] leading-[1.05] wrap-break-word sm:text-[40px]">
               {tier ? tier.word : 'nothing landed'}
             </h2>
           </div>

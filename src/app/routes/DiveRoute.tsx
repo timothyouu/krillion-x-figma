@@ -40,7 +40,7 @@ export function DiveRoute() {
   return (
     <>
       <DepthGauge depthM={state.depthM} />
-      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0">
+      <main className="relative z-10 mx-auto flex min-h-[min(950px,var(--app-safe-height))] w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0">
         <Hud state={state} />
         <DiveBody state={state} submit={submit} start={start} descend={descend} />
       </main>
@@ -50,7 +50,7 @@ export function DiveRoute() {
 
 function Hud({ state }: { state: DiveState }) {
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-3 sm:h-[60px]">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-3 sm:h-[60px] [@media(max-height:520px)]:h-12">
       <Nametag>
         <span className="sr-only">Depth </span>
         <span className="font-mono tabular">
@@ -87,7 +87,7 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
         <RevealCard reveal={state.reveal} roundCount={state.roundCount} promptText={state.prompt?.text ?? null} />
         <Stage slug={state.figpalSlug} />
         <nav className="flex justify-center pt-2">
-          <FigButton icon={lastRound ? 'up' : 'down'} onClick={descend} autoFocus>
+          <FigButton icon={lastRound ? 'up' : 'down'} onClick={descend} ref={focusAdvance}>
             {lastRound ? 'Surface' : 'Descend'}
           </FigButton>
         </nav>
@@ -114,7 +114,7 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
         </section>
         <Stage slug={state.figpalSlug} />
         <nav className="flex justify-center pt-2">
-          <FigButton icon="down" onClick={start} disabled={waiting} autoFocus>
+          <FigButton icon="down" onClick={start} disabled={waiting} ref={focusAdvance}>
             Descend
           </FigButton>
         </nav>
@@ -154,10 +154,14 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
   )
 }
 
+function focusAdvance(button: HTMLButtonElement | null) {
+  button?.focus({ preventScroll: true })
+}
+
 function Stage({ slug }: { slug: string }) {
   return (
-    <div className="flex flex-1 items-center justify-center py-4">
-      <div className="[@media(max-height:760px)]:hidden">
+    <div className="flex flex-1 items-center justify-center py-2 sm:py-4 [@media(max-height:520px)]:py-0">
+      <div className="hidden sm:[@media(min-height:761px)]:block">
         <FigPalStage slug={slug} width={120} />
       </div>
     </div>

@@ -6,7 +6,7 @@ import { formatDepth } from '../lib/tiers'
 const STEP_PX = 22
 const METRES_PER_STEP = 100
 const STEPS = 50
-const MARKER_TOP = '30vh'
+const MARKER_TOP = 'min(30dvh, 285px)'
 
 interface DepthGaugeProps {
   depthM: number
@@ -23,7 +23,7 @@ export function DepthGauge({ depthM }: DepthGaugeProps) {
   const offsetPx = (Math.min(depthM, STEPS * METRES_PER_STEP) / METRES_PER_STEP) * STEP_PX
   return (
     <div
-      className="pointer-events-none fixed inset-y-0 right-[43px] z-0 hidden w-[40px] lg:block"
+      className="pointer-events-none fixed inset-y-0 right-[max(43px,calc((100vw-1280px)/2+43px))] z-0 hidden w-[40px] xl:block"
       role="img"
       aria-label={`Depth ${formatDepth(depthM)}`}
     >

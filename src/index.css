@@ -42,7 +42,9 @@
   }
 
   body {
+    --app-safe-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     margin: 0;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     min-height: 100dvh;
     overflow-x: clip;
     font-family: var(--font-sans);
