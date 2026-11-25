@@ -153,6 +153,37 @@ Re-importing after people have played needs `select private.publish_import('midy
 
 ## 8. Game day (Dec 8)
 
+### Before the window opens: clear test content
+
+Testing leaves rows behind. Run this once after the last dry run and before the real window opens. Each statement touches only what it names, and the prompts and answers for `midyear-2026` stay.
+
+```sql
+-- 1. The temporary Figma sample game, if it was ever loaded here. Cascades its prompts, answers and players.
+delete from public.games where slug = 'figma-sample-local';
+
+-- 2. Dry-run players in the real game, so the Dec 8 leaderboard starts empty. Cascades their rounds and attempts.
+delete from private.players p
+using public.games g
+where g.id = p.game_id and g.slug = 'midyear-2026';
+
+-- 3. Leftover CSV landing rows from any import.
+delete from public.import_answers;
+delete from public.import_prompts;
+
+-- 4. Check: expect midyear-2026 with 5 prompts and 0 players, plus practice.
+select g.slug,
+       (select count(*) from private.prompts p where p.game_id = g.id) as prompts,
+       (select count(*) from private.players pl where pl.game_id = g.id) as players
+from public.games g
+order by g.slug;
+```
+
+Keep `practice`: it's the smoke test on the production site and has its own leaderboard. If you'd rather nobody wanders into it on the day, close it with `update public.games set closes_at = now() where slug = 'practice';`.
+
+Nothing in GitHub needs cleaning. The repo only ever holds the generic practice seed; local test content lives in the git-ignored `supabase/seed/` folder and in local databases.
+
+### On the day
+
 - Set the window (section 6) a day ahead, and test with `practice` on the production site.
 - Watch: **Database → Query Performance** and **Logs → Postgres** for errors. Useful live counts:
   ```sql
@@ -208,3 +239,4 @@ On plain Postgres, run [`supabase/tests/local_stubs.sql`](supabase/tests/local_s
 - [ ] (Optional) Timothy invited as Developer
 - [ ] `midyear-2026` game row created once the window is decided
 - [ ] Ankita's content imported with `publish_import` (by Dec 3)
+- [ ] Test content cleared (section 8) after the last dry run
