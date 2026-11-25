@@ -16,7 +16,7 @@ export function percentileLine(betterThanPct: number, finishedCount: number): st
 }
 
 /** Plain-text summary for "Copy result". */
-export function buildShareText(results: ResultsResponse, gameTitle = 'Figillion'): string {
+export function buildShareText(results: ResultsResponse, gameTitle = 'FIGILLION'): string {
   const { player, max_score: max, rank, finished_count: total } = results
   const bearing = rankTitle(player.score)
   const log = results.rounds

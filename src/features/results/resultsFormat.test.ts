@@ -36,7 +36,7 @@ describe('buildShareText', () => {
       ],
     }
     const text = buildShareText(results)
-    expect(text).toContain('235/500 · -2,350 m')
+    expect(text.split('\n')[0]).toBe('FIGILLION · 235/500 · -2,350 m')
     expect(text).toContain('Rare. Below the thermocline.')
     expect(text).toContain('1. Figlion +100')
     expect(text).toContain('2. Nothing landed +0')
