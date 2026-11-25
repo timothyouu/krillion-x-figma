@@ -1,16 +1,18 @@
 import type { CSSProperties } from 'react'
 import { FALL_CURVE, SURFACE_MS } from '../features/dive/diveMotion'
+import { DescentBoard } from './DescentBoard'
 
 interface DiveCanvasProps {
   depthM: number
   round: number
   duration: number
   cue?: string
-  entering?: boolean
+  descending?: boolean
+  playerName?: string
   surfacing?: boolean
 }
 
-export function DiveCanvas({ depthM, round, duration, cue, entering = false, surfacing = false }: DiveCanvasProps) {
+export function DiveCanvas({ depthM, round, duration, cue, descending = false, playerName = '', surfacing = false }: DiveCanvasProps) {
   const offset = Math.min(5000, depthM) * 0.08 + Math.min(round, 5) * 62
   const style = {
     '--canvas-offset': -offset + 'px',
@@ -19,13 +21,16 @@ export function DiveCanvas({ depthM, round, duration, cue, entering = false, sur
     '--fall-curve': FALL_CURVE,
   } as CSSProperties
 
-  const modifier = surfacing ? ' dive-canvas--surface' : entering ? ' dive-canvas--enter' : ''
+  const modifier = surfacing ? ' dive-canvas--surface' : ''
 
   return (
     <div className={'dive-canvas' + modifier} style={style} aria-hidden="true">
-      <div className="dive-canvas__grid" />
+      <div className="dive-canvas__viewport" data-descending={descending}>
+        <div className="dive-canvas__grid" />
+      </div>
       <div className="dive-canvas__tint" />
-      {cue || surfacing ? (
+      {descending ? <DescentBoard key={cue} round={round} playerName={playerName} /> : null}
+      {(cue && !descending) || surfacing ? (
         <div className="dive-canvas__guides" key={cue ?? 'surface'}>
           <span /><span /><span /><span />
         </div>

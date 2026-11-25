@@ -21,3 +21,7 @@ A Figma-themed trivia game built by the Figma Campus Leader Social Team as the i
 
 ## Team
 Figma Campus Leader Social Team: Timothy Ou, Christian Garcia, Ankita, Srishti Jha. Graphics by Nathan and Oscar.
+
+## Artwork credits
+
+Descent emoji artwork by [Twemoji](https://github.com/jdecked/twemoji), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

@@ -71,7 +71,8 @@ export function DiveRoute() {
 
   const reaction = guessReaction(state)
   const sinkTime = state.reveal?.accepted ? sinkDurationMs(state.reveal.tier) : 0
-  const isDescending = state.phase === 'starting' || state.phase === 'countdown'
+  const isDescending = state.phase === 'countdown' ||
+    (state.phase === 'starting' && state.prompt === null && state.countdownSeconds > 0)
   const cue = sinkTime > 0 ? 'land-' + state.round : isDescending ? 'descend-' + state.round : undefined
 
   function advance() {
@@ -80,22 +81,26 @@ export function DiveRoute() {
   }
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <DiveCanvas
         depthM={state.depthM}
         round={state.round}
         duration={sinkTime || DESCENT_MS}
         cue={cue}
-        entering={isDescending && state.round === 1}
+        descending={isDescending}
+        playerName={state.displayName}
       />
       <DepthGauge depthM={state.depthM} duration={sinkTime || DESCENT_MS} />
       <CanvasCursors scene="dive" layout="margins" reaction={reaction} />
       <CanvasPlayerCursor nickname={state.displayName} />
-      <main className="relative z-10 mx-auto flex min-h-[min(950px,var(--app-safe-height))] w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0">
+      <main
+        className="relative z-10 mx-auto flex min-h-[min(950px,var(--app-safe-height))] w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0"
+        style={{ '--descent-duration': DESCENT_MS + 'ms' } as CSSProperties}
+      >
         <Hud state={state} motionDuration={sinkTime || DESCENT_MS} />
         <DiveBody state={state} countdownLeft={countdownLeft} sinkTime={sinkTime} reaction={reaction} submit={submit} start={start} descend={advance} />
       </main>
-    </>
+    </div>
   )
 }
 
@@ -196,6 +201,7 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
         round={state.round}
         roundCount={state.roundCount}
         theme={pending ? '' : (prompt?.theme ?? '')}
+        descending={pending && !resuming && state.countdownSeconds > 0}
         text={pending ? 'Descending…' : (prompt?.text ?? '')}
         subline={subline}
       />

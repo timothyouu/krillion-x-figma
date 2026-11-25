@@ -96,7 +96,7 @@ export function AnswerInput({ resetKey, disabled, checking, seconds, pending, ex
             value={value}
             disabled={disabled}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={pending ? 'HOLD YOUR BREATH' : 'YOUR ANSWER'}
+            placeholder={pending ? 'PANNING…' : 'YOUR ANSWER'}
             className={'h-[51px] w-full bg-paper pl-5 pr-3 font-mono text-[20px] text-ink outline-none placeholder:text-ink-soft disabled:text-mute' + (lifted ? ' text-transparent!' : '') + (lift ? ' placeholder:text-transparent' : '')}
           />
           {lift ? (

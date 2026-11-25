@@ -234,9 +234,31 @@
   to { opacity: 0; }
 }
 
+@keyframes board-pan {
+  0% { transform: translateY(min(24dvh, 190px)) scale(1.13); }
+  35% { transform: translateY(6dvh) scale(0.95); }
+  76% { transform: translateY(-5dvh) scale(1.04); }
+  100% { transform: none; }
+}
+
+@keyframes board-section-pass {
+  0% { opacity: 0; transform: translate3d(0, 59dvh, 0) scale(0.94); }
+  24% { opacity: 0.94; }
+  62% { opacity: 0.82; }
+  100% { opacity: 0; transform: translate3d(0, var(--board-pass-end), 0) scale(1.07); }
+}
+
 @keyframes arrive-at-frame {
-  from { opacity: 0.78; transform: translateY(54px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  0% { opacity: 0; transform: translateY(min(30dvh, 225px)) scale(0.92); }
+  34% { opacity: 1; }
+  73% { transform: translateY(-7px) scale(1.008); }
+  100% { transform: none; }
+}
+
+@keyframes frame-snap {
+  0%, 54% { opacity: 0; }
+  73%, 82% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes figpal-descend {
@@ -832,7 +854,7 @@
 .dive-canvas__grid {
   position: absolute;
   inset: -24px 0 -740px;
-  background: var(--color-canvas) url('./assets/brand/grid-bg.png') center 24px / 1280px 1280px repeat;
+  background: var(--color-canvas) url('./assets/brand/grid-bg.png') center calc(24px + 28dvh) / 1280px 1280px repeat;
   transform: translateY(var(--canvas-offset));
   transition: transform var(--canvas-duration) var(--fall-curve);
 }
@@ -877,8 +899,168 @@
 .dive-canvas__guides span:nth-child(3) { left: 12%; top: 68%; width: clamp(28px, 8vw, 96px); }
 .dive-canvas__guides span:nth-child(4) { right: 9%; top: 86%; }
 
-.dive-canvas--enter .dive-canvas__grid {
-  animation: canvas-surface var(--canvas-duration) var(--ease-sink) reverse;
+.dive-canvas__viewport {
+  position: absolute;
+  inset: -28dvh -8vw;
+}
+
+.dive-canvas__viewport[data-descending='true'] {
+  animation: board-pan var(--canvas-duration) ease-in-out;
+}
+
+.dive-board {
+  position: absolute;
+  inset: 0;
+  width: min(100%, 1200px);
+  margin-inline: auto;
+}
+
+.dive-board__section {
+  position: absolute;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(5px, 1.2vw, 14px);
+  width: clamp(128px, 22vw, 278px);
+  padding: clamp(9px, 1.7vw, 21px);
+  border: 1px solid #b1b9c4;
+  border-radius: 8px;
+  background: #fff9;
+  animation: board-section-pass var(--canvas-duration) ease-in-out both;
+}
+
+.dive-board__section--far {
+  --board-pass-end: -52dvh;
+  top: 29%;
+  right: clamp(-65px, calc((100vw - 1150px) * 0.15), 28px);
+}
+
+.dive-board__section--near {
+  --board-pass-end: -83dvh;
+  top: 57%;
+  left: clamp(-50px, calc((100vw - 1150px) * 0.13), 24px);
+  width: clamp(144px, 25vw, 312px);
+}
+
+.dive-board__item {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
+
+.dive-board__item:nth-child(2) {
+  rotate: -6deg;
+  margin-top: 15%;
+}
+
+.dive-board__item:nth-child(3) {
+  rotate: 5deg;
+  margin-top: 7%;
+}
+
+.dive-board__sticky {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 3px;
+  color: #282022;
+  background: #ffefa8;
+  box-shadow: 0 2px 3px #15192b25;
+  font-size: clamp(8px, 1vw, 14px);
+  font-weight: 650;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.dive-board__sticky[data-tone='blue'] { background: #b8e5ff; }
+.dive-board__sticky[data-tone='pink'] { background: #ffc9e6; }
+.dive-board__sticky[data-tone='green'] { background: #c8efb3; }
+
+.dive-board__item .dive-board__sticker {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.dive-board__emoji {
+  width: min(100%, clamp(23px, 4vw, 51px));
+  height: auto;
+  filter: drop-shadow(0 2px 2px #15192b28);
+}
+
+.dive-board__comment {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  max-width: 140%;
+  padding: 4px 6px 4px 4px;
+  border: 1px solid #d9dce1;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--color-paper);
+  color: var(--color-ink-strong);
+  box-shadow: 0 2px 5px #15192b23;
+  font-size: clamp(8px, 0.9vw, 12px);
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.dive-board__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: clamp(14px, 1.75vw, 23px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #7542d2;
+  color: white;
+}
+
+.dive-board__section--far .dive-board__avatar {
+  background: #0d7c64;
+}
+
+.dive-board__connector {
+  position: relative;
+  width: 87%;
+  margin-block: clamp(14px, 2.4vw, 31px);
+  border-top: 2px dashed #7542d2;
+  rotate: -18deg;
+}
+
+.dive-board__connector::before,
+.dive-board__connector::after {
+  position: absolute;
+  top: -5px;
+  width: 8px;
+  height: 8px;
+  content: '';
+}
+
+.dive-board__connector::before {
+  left: 0;
+  border: 1px solid #7542d2;
+  border-radius: 50%;
+  background: var(--color-paper);
+}
+
+.dive-board__connector::after {
+  right: 0;
+  border-top: 2px solid #7542d2;
+  border-right: 2px solid #7542d2;
+  rotate: 45deg;
+}
+
+@media (max-width: 639px) {
+  .dive-board__section--near {
+    left: -8px;
+    width: 174px;
+  }
+
+  .dive-board__section--far {
+    right: -8px;
+    width: 164px;
+  }
 }
 
 .dive-canvas--surface .dive-canvas__grid {
@@ -1216,8 +1398,33 @@
   animation: descend 200ms var(--ease-sink);
 }
 
-.prompt-descend {
-  animation: arrive-at-frame 570ms var(--ease-sink);
+.prompt-frame[data-descending='true'] {
+  animation: arrive-at-frame var(--descent-duration) ease-in-out;
+}
+
+.prompt-frame__snap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: frame-snap var(--descent-duration) linear;
+}
+
+.prompt-frame__snap::before,
+.prompt-frame__snap::after {
+  content: '';
+  position: absolute;
+  border: 0 dashed #ed3bac;
+}
+
+.prompt-frame__snap::before {
+  inset: 0 max(-199px, calc((100% - 100vw) / 2 + 12px));
+  border-block-width: 1px;
+}
+
+.prompt-frame__snap::after {
+  inset: -24px 0;
+  border-inline-width: 1px;
 }
 
 .results-surface {
@@ -1286,6 +1493,19 @@
   .reveal-verdict,
   .no-echo-shake {
     animation: fade-in 150ms ease-out !important;
+  }
+
+  .dive-board {
+    display: none;
+  }
+
+  .prompt-frame__snap {
+    animation: frame-snap 200ms linear !important;
+  }
+
+  .prompt-frame__snap::before,
+  .prompt-frame__snap::after {
+    display: none;
   }
 
   .answer-lift {
