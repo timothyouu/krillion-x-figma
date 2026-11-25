@@ -21,7 +21,8 @@ describe('tiers', () => {
     expect(isTierKey('deep_cut')).toBe(true)
     expect(isTierKey('no_echo')).toBe(false)
     expect(isTierKey(null)).toBe(false)
-    expect(getTier('figlion').label).toBe('Figlion')
+    expect(getTier('figlion').label).toBe('Figillion')
+    expect(getTier('figlion').word).toBe('figillion')
   })
 })
 

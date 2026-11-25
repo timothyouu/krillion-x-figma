@@ -26,7 +26,8 @@ export const TIERS: readonly TierInfo[] = [
   { key: 'uncommon', label: 'Uncommon', word: 'uncommon', points: 30, description: 'Solid. Real Figma users know this one.', color: '#14ae5c', stamp: thumbsUpStamp },
   { key: 'rare', label: 'Rare', word: 'rare', points: 60, description: 'Power-user territory.', color: '#ff7262', stamp: heartStamp },
   { key: 'deep_cut', label: 'Deep Cut', word: 'deep cut', points: 85, description: 'Seriously deep in the docs.', color: '#9747ff', stamp: plusOneStamp },
-  { key: 'figlion', label: 'Figlion', word: 'figlion', points: 100, description: 'One in a Figillion.', color: '#ffc700', stamp: starStamp },
+  // Shown as "Figillion"; the key stays 'figlion' because the database and import format use it.
+  { key: 'figlion', label: 'Figillion', word: 'figillion', points: 100, description: 'One in a Figillion.', color: '#ffc700', stamp: starStamp },
 ] as const
 
 export const NO_ECHO = { word: 'not on the board', color: '#0d99ff', stamp: thumbsDownStamp } as const
@@ -71,7 +72,7 @@ const RANK_BANDS: readonly { max: number; title: RankTitle }[] = [
   { max: 320, title: { tier: 'deep_cut', title: 'Deep Cut.', line: 'Seriously deep pan.' } },
 ]
 
-const TRENCH: RankTitle = { tier: 'figlion', title: 'Figlion.', line: 'Edge of the infinite canvas.' }
+const TRENCH: RankTitle = { tier: 'figlion', title: 'Figillion.', line: 'Edge of the infinite canvas.' }
 
 /** The Bearing: rank title by score band (specs.md 3.1). */
 export function rankTitle(score: number): RankTitle {

@@ -44,13 +44,13 @@ Each tier is a **stamp plus a lowercase word-mark** (Oscar's assets section), ne
 
 | Tier | Points | Depth | Stamp | Color |
 |---|---:|---:|---|---|
-| common | 10 | -100 m | Dot (pink) | `#ffa5dc` |
-| overplayed | 15 | -150 m | Two FigPal Cursors | `#ff9e42` |
-| uncommon | 30 | -300 m | Thumbs up | `#14ae5c` |
-| rare | 60 | -600 m | Heart | `#ff7262` |
-| deep cut | 85 | -850 m | +1 | `#9747ff` |
-| figlion | 100 | -1,000 m | Star | `#ffc700` |
-| no echo (rejection, not a tier) | 0 | | Thumbs down | `#0d99ff` |
+| common | 10 | 100 px | Dot (pink) | `#ffa5dc` |
+| overplayed | 15 | 150 px | Two FigPal Cursors | `#ff9e42` |
+| uncommon | 30 | 300 px | Thumbs up | `#14ae5c` |
+| rare | 60 | 600 px | Heart | `#ff7262` |
+| deep cut | 85 | 850 px | +1 | `#9747ff` |
+| figillion (key `figlion`) | 100 | 1,000 px | Star | `#ffc700` |
+| not on the board (rejection, not a tier) | 0 | | Thumbs down | `#0d99ff` |
 
 Overplayed uses two copies of the FigPal Cursor from Oscar’s assets, with an orange fill and a white sticker outline.
 
@@ -84,7 +84,7 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 - **Reveal** (`RevealCard`, `TierLadder`): same card as the prompt. Left, a ladder of the six tiers (stamp + word + points + depth) under a "surface" line; the answer rides down in a selection frame and stops on its tier, which tints with the tier color. Right, the tier stamp presses on beside the word-mark, `+N PTS · sink N m`, the description, and "Autocorrected from …" when the server matched a different spelling. As in Krillion, the answer chip first shows exactly what you typed with a red squiggle, then corrects itself into the accepted answer as it reaches the surface row (reduced motion shows the corrected answer straight away). A miss keeps the chip at the surface: "nothing landed · +0 PTS · the clock beat you to it."
 - **No echo**: thumbs-down stamp pressed beside `"input": not on the board. try again`, directly above the answer box.
-- **Results**: nametagged cards on the canvas. Zoomed out (score/500, depth in px, The Bearing with its tier stamp, rank, percentile, Copy result), Everyone's pan (20-bucket histogram, your bar in `select` under a YOU tag), Pan log (each prompt is a line dropped from the top of the board to its depth, ending in its stamp), The Board (accordion; every accepted answer, figlion first with its fun fact; yours in a selection frame with a "you" chip).
+- **Results**: nametagged cards on the canvas. Zoomed out (score/500, depth in px, The Bearing with its tier stamp, rank, percentile, Copy result), Everyone's pan (20-bucket histogram, your bar in `select` under a YOU tag), Pan log (each prompt is a line dropped from the top of the board to its depth, ending in its stamp), The Board (accordion; every accepted answer, the Figillion tier first with its fun fact; yours in a selection frame with a "you" chip).
 - **Leaderboard**: projector scale. Big mono title, three counters (divers, surfaced, still diving with a live dot), white rows: rank (top three on star / heart / thumbs-up stamps), FigPal, name, surfaced or "diving 3/5", depth bar, big mono score.
 - **Closed / upcoming / error / config / 404**: one `StatusPanel`: a FigPal off its spotlight, a nametagged card, a mono headline, a plain next step.
 
@@ -101,7 +101,7 @@ The main reveal is a descent through the Figma canvas. The paper frames and sele
 
 - **Answer pickup**: Enter lifts the typed answer out of the box as a selected object (4 px right, 14 px up, -2°, a growing shadow, 160 ms) while the server checks it. An accepted answer flies from there to the surface row of the tier ladder (200–300 ms) as its fall begins. A no-echo answer snaps back into the box with a short shake and fades (260 ms).
 - **Sink**: the selected answer and FigPal accelerate down the tier track and settle over 690–1,315 ms, depending on rarity. Crossed rows flash as the chip passes them. On tall screens, the full FigPal follows the fall below the paper frame. The reveal card only fades in, so the chip's small lift before the drop stays visible.
-- **Verdict and stamp**: the verdict column shows a dashed "landing…" frame during the fall. When the chip lands, the tier stamp presses: it starts above the canvas at 1.35× with a lifted shadow, accelerates down, makes contact at 110 ms (0.94×, flush shadow, a ring in the tier colour spreads out), and settles by 230 ms. Deep cut and figlion also nudge the card 2 px. The tier word, answer, and points rise in turn from 140 ms after landing. Screen readers hear the verdict at landing. Descend is available throughout.
+- **Verdict and stamp**: the verdict column shows a dashed "landing…" frame during the fall. When the chip lands, the tier stamp presses: it starts above the canvas at 1.35× with a lifted shadow, accelerates down, makes contact at 110 ms (0.94×, flush shadow, a ring in the tier colour spreads out), and settles by 230 ms. Deep cut and figillion also nudge the card 2 px. The tier word, answer, and points rise in turn from 140 ms after landing. Screen readers hear the verdict at landing. Descend is available throughout.
 - **Countdown and clock**: the countdown frame stays on screen until the prompt arrives, then the prompt text wipes in from the top (160 ms) in the same card. In the last 5 seconds the time bar turns orange and the answer box handles pulse once a second. At time up the box deselects (handles fade, gray border) for a short beat before the reveal.
 - **Ruler and HUD**: grid and ruler travel up while the answer falls. Selection guides pass at a different speed, and a light blue tint builds with depth. The HUD ticks through intermediate totals and announces the final totals immediately.
 - **Dive**: the 760 ms descent pans and zooms the grid while two FigJam groups sweep past. The near group holds your last catch: a sticky with the answer and its theme (or "nothing landed"), that tier's stamp, and a comment signed by one of the crew whose cursors roam the canvas, in that cursor's colour. The far group shows "Prompt N of 5" and your depth so far. The two groups pick their arrangements independently, so each dive sees five layouts of each with a different pairing every round. On phones only the near group shows, centred, drifting through the open band between the card and the answer box; phones shorter than 700 px skip the board. The snap is the main event: the countdown card ("Descending…") slides up, pink alignment guides flash, and the blue selection pops on with its handles and a size badge (for example 882 × 237). The selection holds until the prompt arrives. The answer field reads GET READY. Reduced motion hides the board and guides; the selection and badge fade in over 240 ms and hold. The scoring window stays server-controlled.

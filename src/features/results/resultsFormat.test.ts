@@ -38,7 +38,7 @@ describe('buildShareText', () => {
     const text = buildShareText(results)
     expect(text.split('\n')[0]).toBe('FIGILLION · 235/500 · 2,350 px')
     expect(text).toContain('Rare. Off the visible canvas.')
-    expect(text).toContain('1. Figlion +100')
+    expect(text).toContain('1. Figillion +100')
     expect(text).toContain('2. Nothing landed +0')
     expect(text).not.toContain('SECRET_A')
   })

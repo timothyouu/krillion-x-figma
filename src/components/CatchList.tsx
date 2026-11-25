@@ -10,7 +10,7 @@ interface CatchListProps {
   results: readonly ResultsRound[]
 }
 
-/** The Catch: one row per prompt; expanding lists every accepted answer, figlion first. */
+/** The Catch: one row per prompt; expanding lists every accepted answer, Figillion tier first. */
 export function CatchList({ rounds, results }: CatchListProps) {
   const [open, setOpen] = useState<number | null>(rounds[0]?.round ?? null)
   const openedButton = useRef<HTMLButtonElement | null>(null)
