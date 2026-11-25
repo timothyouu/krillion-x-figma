@@ -120,6 +120,8 @@ export interface CatchResponse {
 }
 
 export interface LeaderboardRow {
+  /** Per-game identity for retaining rows when ranks change. */
+  row_id?: string
   rank: number
   display_name: string
   figpal_slug: string

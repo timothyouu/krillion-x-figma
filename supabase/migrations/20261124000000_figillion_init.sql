@@ -808,7 +808,7 @@ begin
   g := private.game_by_slug(p_game_slug);
 
   with ranked as (
-    select pl.user_id,
+    select pl.user_id, pl.id as row_id,
            rank() over (order by pl.score desc, pl.finished_at asc nulls last) as rank,
            pl.display_name, pl.figpal_slug, pl.score, pl.score * 10 as depth_m,
            (select count(*) from private.player_rounds pr
@@ -822,7 +822,7 @@ begin
     (select count(*) from ranked),
     (select count(*) from ranked where finished),
     (select jsonb_agg(jsonb_build_object(
-              'rank', l.rank, 'display_name', l.display_name, 'figpal_slug', l.figpal_slug,
+              'row_id', l.row_id, 'rank', l.rank, 'display_name', l.display_name, 'figpal_slug', l.figpal_slug,
               'score', l.score, 'depth_m', l.depth_m, 'rounds_done', l.rounds_done,
               'finished', l.finished)
             order by l.rank, l.joined_at)

@@ -39,12 +39,10 @@ export function Stamp({ tier, kind, size, rotate = 0, press = false, label, clas
   let src = kind ? STAMP_SRC[kind] : STAMP_SRC.star
   if (tier === 'no_echo') src = NO_ECHO.stamp
   else if (tier) src = getTier(tier).stamp
-  // When pressing, the keyframes carry the rotation (via --stamp-rotate) so it is not applied twice.
   const stampStyle = {
     width: size,
     height: size,
-    ...(press ? {} : { rotate: `${rotate}deg` }),
-    '--stamp-rotate': `${rotate}deg`,
+    rotate: rotate + 'deg',
     ...style,
   } as CSSProperties
   return (

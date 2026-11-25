@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { bucketIndexFor } from '../features/results/resultsFormat'
 import type { HistogramBucket } from '../lib/types'
 
@@ -35,8 +36,8 @@ export function ScoreCurve({ histogram, score, maxScore }: ScoreCurveProps) {
               <div
                 key={bucket.from}
                 title={`${bucket.from}–${bucket.to}: ${bucket.count}`}
-                className={`flex-1 rounded-t-[3px] ${i === yours ? 'bg-select' : 'bg-line'}`}
-                style={{ height: h }}
+                className={`histogram-bar flex-1 rounded-t-[3px] ${i === yours ? 'bg-select' : 'bg-line'}`}
+                style={{ height: h, '--chart-delay': Math.min(i * 12, 160) + 'ms' } as CSSProperties}
               />
             )
           })}

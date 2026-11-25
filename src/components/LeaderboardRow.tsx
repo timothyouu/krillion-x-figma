@@ -16,7 +16,7 @@ interface LeaderboardRowProps {
 /** One diver on the screen-share board: rank, FigPal, name, status, depth line, score. */
 export function LeaderboardRow({ row, roundCount, isMe }: LeaderboardRowProps) {
   const podium = PODIUM[row.rank]
-  const depthPct = Math.min(1, row.depth_m / MAX_DEPTH_M) * 100
+  const depthFraction = Math.min(1, row.depth_m / MAX_DEPTH_M)
   return (
     <li
       className={`relative grid grid-cols-[48px_44px_minmax(0,1fr)_auto] items-center gap-3 border bg-paper px-3 py-2 sm:grid-cols-[64px_56px_minmax(0,1fr)_minmax(0,220px)_110px] sm:gap-5 sm:px-5 ${
@@ -43,7 +43,7 @@ export function LeaderboardRow({ row, roundCount, isMe }: LeaderboardRowProps) {
       </span>
       <span className="hidden flex-col gap-1.5 sm:flex" aria-hidden>
         <span className="h-[5px] w-full overflow-hidden rounded-[20px] bg-line">
-          <span className="block h-full rounded-[20px] bg-mute transition-[width] duration-700" style={{ width: `${depthPct}%` }} />
+          <span className="block h-full w-full origin-left rounded-[20px] bg-mute transition-transform duration-700" style={{ transform: 'scaleX(' + depthFraction + ')' }} />
         </span>
         <span className="font-mono text-[13px] text-mute tabular">{formatDepth(row.depth_m)}</span>
       </span>

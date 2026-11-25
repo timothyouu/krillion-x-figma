@@ -17,7 +17,9 @@ export function Timer({ seconds, pending = false }: TimerProps) {
       aria-label={pending ? `Clock starts in ${seconds} seconds` : `${seconds} seconds left`}
       className="flex h-[70px] min-w-[70px] shrink-0 items-center justify-center rounded-full bg-paper px-[15px]"
     >
-      <SevenSegment value={twoDigits(seconds)} height={30} litColor={lit} />
+      <div key={pending ? seconds : 'clock'} className={pending ? 'countdown-step' : undefined}>
+        <SevenSegment value={twoDigits(seconds)} height={30} litColor={lit} />
+      </div>
     </div>
   )
 }

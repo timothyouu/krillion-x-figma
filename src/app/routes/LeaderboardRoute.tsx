@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FigPalStage } from '../../components/FigPalStage'
 import { LeaderboardRow } from '../../components/LeaderboardRow'
 import { Stamp } from '../../components/Stamp'
+import { usePrefersReducedMotion } from '../../components/usePrefersReducedMotion'
 import { loadDraft } from '../../lib/playerDraft'
 import { LoadingScreen } from '../../components/StatusPanel'
 import { useLeaderboard } from '../../features/leaderboard/useLeaderboard'
@@ -49,18 +50,7 @@ export function LeaderboardRoute() {
       ) : null}
 
       {data && data.rows.length > 0 ? (
-        <ol className="flex flex-col gap-2" aria-label="Leaderboard">
-          {data.rows.map((row) => (
-            <LeaderboardRow
-              key={`${row.rank}-${row.display_name}-${row.figpal_slug}`}
-              row={row}
-              roundCount={ROUND_COUNT}
-              isMe={Boolean(
-                data.me && data.me.rank === row.rank && data.me.score === row.score && row.display_name === myName,
-              )}
-            />
-          ))}
-        </ol>
+        <RankedRows rows={data.rows} me={data.me} myName={myName} />
       ) : null}
 
       {data?.me && !data.rows.some((r) => r.rank === data.me?.rank) ? (
@@ -71,6 +61,49 @@ export function LeaderboardRoute() {
 
       <footer className="font-mono text-[12px] uppercase text-mute">updates every 3 seconds</footer>
     </main>
+  )
+}
+
+function RankedRows({ rows, me, myName }: Pick<LeaderboardResponse, 'rows' | 'me'> & { myName: string }) {
+  const list = useRef<HTMLOListElement>(null)
+  const previous = useRef(new Map<HTMLElement, number>())
+  const reducedMotion = usePrefersReducedMotion()
+
+  useLayoutEffect(() => {
+    if (!list.current) return
+
+    // Read every resting position before applying any row transforms.
+    const positions = new Map(Array.from(list.current.children, (child) => {
+      const row = child as HTMLElement
+      return [row, row.offsetTop]
+    }))
+    const before = previous.current
+    previous.current = positions
+    if (reducedMotion) return
+
+    const animations: Animation[] = []
+    for (const [row, top] of positions) {
+      const oldTop = before.get(row)
+      if (oldTop === undefined || oldTop === top || !row.animate) continue
+      animations.push(row.animate(
+        [{ transform: 'translateY(' + (oldTop - top) + 'px)' }, { transform: 'translateY(0)' }],
+        { duration: 340, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' },
+      ))
+    }
+    return () => animations.forEach((animation) => animation.cancel())
+  }, [rows, reducedMotion])
+
+  return (
+    <ol ref={list} className="relative flex flex-col gap-2" aria-label="Leaderboard">
+      {rows.map((row, index) => (
+        <LeaderboardRow
+          key={row.row_id ?? index}
+          row={row}
+          roundCount={ROUND_COUNT}
+          isMe={Boolean(me && me.rank === row.rank && me.score === row.score && row.display_name === myName)}
+        />
+      ))}
+    </ol>
   )
 }
 

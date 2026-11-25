@@ -66,7 +66,7 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 ## Screens Oscar did not draw
 
-- **Reveal** (`RevealCard`, `TierLadder`): same card as the prompt. Left, a ladder of the six tiers (stamp + word + points + depth) under a "surface" line; the answer rides down in a selection frame and stops on its tier, which tints with the tier color. Right, the tier stamp presses on, then the word-mark, `+N PTS · sink N m`, the description, and "You typed …" when the server forgave a typo. A miss keeps the chip at the surface: "nothing landed · +0 PTS · the clock beat you to it."
+- **Reveal** (`RevealCard`, `TierLadder`): same card as the prompt. Left, a ladder of the six tiers (stamp + word + points + depth) under a "surface" line; the answer rides down in a selection frame and stops on its tier, which tints with the tier color. Right, the tier stamp presses on beside the word-mark, `+N PTS · sink N m`, the description, and "You typed …" when the server forgave a typo. A miss keeps the chip at the surface: "nothing landed · +0 PTS · the clock beat you to it."
 - **No echo**: thumbs-down stamp pressed beside `"input": no echo. try again`, directly above the answer box.
 - **Results**: nametagged cards on the canvas. Surfaced (score/500, depth, The Bearing with its tier stamp, rank, percentile, Copy result), Everyone's dive (20-bucket histogram, your bar in `select` under a YOU tag), Dive log (each prompt is a line dropped from the surface to its depth, ending in its stamp), The Catch (accordion; every accepted answer, figlion first with its fun fact; yours in a selection frame with a "you" chip).
 - **Leaderboard**: projector scale. Big mono title, three counters (divers, surfaced, still diving with a live dot), white rows: rank (top three on star / heart / thumbs-up stamps), FigPal, name, surfaced or "diving 3/5", depth bar, big mono score.
@@ -82,11 +82,12 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 One authored moment per screen; everything else is quiet.
 
-- **Sink** (signature): answer chip `translateY` to its tier row, `cubic-bezier(0.16, 1, 0.3, 1)`, 650 ms + 170 ms per tier (deeper falls longer). The tier row tint, stamp press and verdict text start when the chip lands.
-- **Stamp press**: scale 1.6 → 0.92 → 1 with opacity, 420 ms.
-- **Ruler**: slides to the new depth over 1.4 s on the same curve.
-- **FigPal bob**: 6 px, 3.2 s loop, idle only.
-- `prefers-reduced-motion`: no sink (chip placed on its tier), no bob, no pulses; content is never hidden behind an animation.
+- **Sink**: the selection chip slides to its tier row over 520–920 ms. The row tints and the stamp presses when it lands. The verdict, points, and controls are readable from the start.
+- **Ruler and HUD**: the ruler slides up over 920 ms while score and depth tick through intermediate values. Assistive technology gets the final totals immediately.
+- **Dive**: countdown digits step down, a new prompt drops into place, and a no-echo retry gives the feedback line a small shake and a stamp press.
+- **Results**: the page rises into place, histogram bars grow from their baselines, and dive-log lines drop from the surface. Catch contents expand from the top of the opened row.
+- **Leaderboard**: existing rows glide to their new rank using the stable per-game row identity.
+- **Reduced motion**: all changes take effect immediately, with the same verdict, controls, text, and charts.
 
 ## Browser surfaces
 

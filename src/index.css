@@ -33,7 +33,6 @@
   --radius-tile: 20px;
 
   --ease-sink: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -124,29 +123,36 @@
 }
 
 @keyframes stamp-press {
-  0% {
-    transform: scale(1.6) rotate(var(--stamp-rotate, 0deg));
-    opacity: 0;
-  }
-  60% {
-    transform: scale(0.92) rotate(var(--stamp-rotate, 0deg));
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(var(--stamp-rotate, 0deg));
-    opacity: 1;
-  }
+  0% { scale: 1.28; }
+  58% { scale: 0.92; }
+  100% { scale: 1; }
 }
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes tier-sink {
+  from { translate: 0 0; }
+  to { translate: 0 var(--sink-distance); }
+}
+
+@keyframes tier-landing {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes no-echo-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -4px 0; }
+  45% { translate: 3px 0; }
+  72% { translate: -1px 0; }
+}
+
+@keyframes descend {
+  from { translate: 0 var(--descend-from); }
+  to { translate: 0 0; }
+}
+
+@keyframes chart-grow {
+  from { scale: 1 var(--chart-start); }
+  to { scale: 1 1; }
 }
 
 @keyframes live-pulse {
@@ -164,11 +170,62 @@
 }
 
 .animate-stamp {
-  animation: stamp-press 420ms var(--ease-out-expo) both;
+  animation: stamp-press 310ms var(--ease-sink) var(--stamp-delay, 0ms);
 }
 
-.animate-rise {
-  animation: rise-in 360ms var(--ease-out-expo) both;
+.tier-sink {
+  translate: 0 var(--sink-distance);
+  animation: tier-sink var(--sink-duration) var(--ease-sink);
+}
+
+.tier-landing {
+  animation: tier-landing 180ms ease-out var(--sink-duration) backwards;
+}
+
+.no-echo-shake {
+  animation: no-echo-shake 185ms ease-out;
+}
+
+.countdown-step {
+  --descend-from: -7px;
+  animation: descend 200ms var(--ease-sink);
+}
+
+.prompt-descend {
+  --descend-from: -18px;
+  animation: descend 310ms var(--ease-sink);
+}
+
+.results-surface {
+  --descend-from: 18px;
+  animation: descend 340ms var(--ease-sink);
+}
+
+.dive-total::after {
+  content: var(--dive-total);
+}
+
+.histogram-bar {
+  --chart-start: 0.25;
+  transform-origin: bottom;
+  animation: chart-grow 470ms var(--ease-sink) var(--chart-delay) backwards;
+}
+
+.dive-log-line {
+  --chart-start: 0.12;
+  transform-origin: top;
+  animation: chart-grow 520ms var(--ease-sink) var(--chart-delay) backwards;
+}
+
+.dive-log-stamp {
+  --descend-from: var(--drop-start);
+  animation: descend 520ms var(--ease-sink) var(--chart-delay) backwards;
+}
+
+.catch-expand {
+  --chart-start: 0.9;
+  transform-origin: top;
+  animation: chart-grow 230ms var(--ease-sink);
 }
 
 .animate-live {
@@ -179,14 +236,8 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .animate-bob,
-  .animate-live {
     animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

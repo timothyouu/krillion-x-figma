@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { formatDepth, getTier, isTierKey } from '../lib/tiers'
 import type { ResultsRound } from '../lib/types'
 import { Stamp } from './Stamp'
@@ -21,17 +22,17 @@ export function DiveLog({ rounds }: DiveLogProps) {
           const drop = tier ? Math.max(18, (Math.min(depth, MAX_DROP_M) / MAX_DROP_M) * DROP_PX) : 10
           return (
             <li key={r.round} className="flex min-w-0 flex-col items-center">
-              <div className="relative flex w-full flex-col items-center" style={{ height: DROP_PX + 44 }} aria-hidden>
+              <div className="relative flex w-full flex-col items-center" style={{ height: DROP_PX + 44, '--chart-delay': (r.round - 1) * 42 + 'ms' } as CSSProperties} aria-hidden>
                 <div
-                  className={`w-[3px] rounded-b-[2px] ${tier ? '' : 'border-l-2 border-dashed border-mute bg-transparent'}`}
+                  className={`dive-log-line w-[3px] rounded-b-[2px] ${tier ? '' : 'border-l-2 border-dashed border-mute bg-transparent'}`}
                   style={{ height: drop, backgroundColor: tier ? tier.color : undefined }}
                 />
                 <Stamp
                   tier={tier ? tier.key : 'no_echo'}
                   size={40}
                   rotate={r.round % 2 === 0 ? 8 : -8}
-                  className={`absolute -translate-y-1/2 ${tier ? '' : 'opacity-70'}`}
-                  style={{ top: drop + 4 }}
+                  className={`dive-log-stamp absolute -translate-y-1/2 ${tier ? '' : 'opacity-70'}`}
+                  style={{ top: drop + 4, '--drop-start': -drop * 0.88 + 'px' } as CSSProperties}
                 />
               </div>
               <p className="font-mono text-[12px] text-mute">P{r.round}</p>

@@ -62,8 +62,8 @@ export function AnswerInput({ resetKey, disabled, checking, seconds, pending, fr
         </SelectionFrame>
         <div className="h-[5px] w-full overflow-hidden rounded-[20px] bg-line" aria-hidden>
           <div
-            className="h-full rounded-[20px] bg-mute transition-[width] duration-100 ease-linear"
-            style={{ width: `${Math.max(0, Math.min(1, fractionLeft)) * 100}%` }}
+            className="h-full w-full origin-left rounded-[20px] bg-mute transition-transform duration-100 ease-linear"
+            style={{ transform: 'scaleX(' + Math.max(0, Math.min(1, fractionLeft)) + ')' }}
           />
         </div>
       </div>

@@ -46,7 +46,7 @@ export function CatchList({ rounds, results }: CatchListProps) {
               </span>
             </button>
             {isOpen ? (
-              <ol id={panelId} className="flex flex-col gap-1 pb-5 sm:pl-10">
+              <ol id={panelId} className="catch-expand flex flex-col gap-1 pb-5 sm:pl-10">
                 {(round.answers ?? []).map((a, i) => {
                   const tier = isTierKey(a.tier) ? getTier(a.tier) : null
                   const row = (

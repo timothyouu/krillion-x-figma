@@ -11,12 +11,12 @@ export function NoEchoMessage({ input, attempt }: NoEchoMessageProps) {
   return (
     <div className="flex min-h-9 items-center gap-2" role="status" aria-live="assertive">
       {input ? (
-        <>
-          <Stamp key={attempt} tier="no_echo" size={32} rotate={-8} press />
+        <div key={attempt} className="no-echo-shake flex items-center gap-2">
+          <Stamp tier="no_echo" size={32} rotate={-8} press />
           <p className="font-mono text-[16px] text-ink">
             <span className="break-all">“{input}”</span>: no echo. <span className="text-ink-soft">try again</span>
           </p>
-        </>
+        </div>
       ) : null}
     </div>
   )

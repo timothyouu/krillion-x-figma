@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AnswerInput } from '../../components/AnswerInput'
 import { DepthGauge } from '../../components/DepthGauge'
+import { DiveTotal } from '../../components/DiveTotal'
 import { ErrorScreen } from '../../components/ErrorScreen'
 import { FigButton } from '../../components/FigButton'
 import { FigPalStage } from '../../components/FigPalStage'
@@ -52,12 +53,14 @@ function Hud({ state }: { state: DiveState }) {
     <header className="flex h-16 shrink-0 items-center justify-between gap-3 sm:h-[60px]">
       <Nametag>
         <span className="sr-only">Depth </span>
-        <span className="font-mono tabular">{formatDepth(state.depthM)}</span>
+        <span className="font-mono tabular">
+          <DiveTotal value={state.depthM} format={formatDepth} />
+        </span>
       </Nametag>
       <ProgressPips pips={state.pips} current={state.round} />
       <Nametag>
         <span className="font-mono tabular">
-          {state.score}
+          <DiveTotal value={state.score} format={String} />
           <span className="text-mute">/{state.maxScore}</span>
         </span>
         <span className="sr-only"> points</span>
@@ -133,7 +136,7 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
 
   return (
     <>
-      <PromptCard round={prompt.round} roundCount={state.roundCount} theme={prompt.theme} text={prompt.text} subline={subline} />
+      <PromptCard key={prompt.round} round={prompt.round} roundCount={state.roundCount} theme={prompt.theme} text={prompt.text} subline={subline} />
       <Stage slug={state.figpalSlug} />
       <div className="flex flex-col gap-1">
         <NoEchoMessage input={state.noEcho} attempt={state.attempt} />

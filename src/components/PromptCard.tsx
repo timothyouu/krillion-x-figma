@@ -14,7 +14,7 @@ interface PromptCardProps {
 /** Oscar's question component (108:11014): nametag tab, white card, mono prompt, stamps. */
 export function PromptCard({ round, roundCount, theme, text, subline }: PromptCardProps) {
   return (
-    <section className="flex w-full flex-col gap-[5px]" aria-labelledby="prompt-text">
+    <section className="prompt-descend flex w-full flex-col gap-[5px]" aria-labelledby="prompt-text">
       <Nametag>
         Prompt {round} of {roundCount}
         {theme ? <span className="font-normal text-ink-soft">&nbsp;·&nbsp;{theme}</span> : null}

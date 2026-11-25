@@ -28,7 +28,7 @@ export function DepthGauge({ depthM }: DepthGaugeProps) {
       aria-label={`Depth ${formatDepth(depthM)}`}
     >
       <div
-        className="absolute left-0 right-0 transition-transform duration-[1400ms] ease-[var(--ease-sink)]"
+        className="absolute left-0 right-0 transition-transform duration-[920ms] ease-[var(--ease-sink)]"
         style={{ top: MARKER_TOP, transform: `translateY(${-offsetPx}px)` }}
       >
         {/* the rule line extends above the surface and below the trench floor */}

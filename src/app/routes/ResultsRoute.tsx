@@ -46,7 +46,7 @@ function ResultsView({ data }: { data: ResultsResponse }) {
   const bearing = rankTitle(player.score)
 
   return (
-    <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
+    <main className="results-surface mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
       <header className="flex items-center justify-between gap-4">
         <Link to="/" className="font-mono text-[22px] tracking-[0.02em] sm:text-[28px]">
           FIGILLION
