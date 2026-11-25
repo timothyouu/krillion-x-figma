@@ -1,5 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { FIGPALS } from '../lib/figpals'
+import { FigButton } from './FigButton'
 import { FigPalAvatar } from './FigPalAvatar'
 import { Nametag } from './Nametag'
 import { SelectionFrame } from './SelectionFrame'
@@ -15,6 +16,7 @@ export function FigPalPicker({ selected, onSelect, onClose }: FigPalPickerProps)
   const selectedRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
+    selectedRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     selectedRef.current?.focus({ preventScroll: true })
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -38,22 +40,24 @@ export function FigPalPicker({ selected, onSelect, onClose }: FigPalPickerProps)
 
   return (
     <section className="flex w-full flex-col gap-[5px]" aria-labelledby="picker-title">
-      <Nametag>
-        <span id="picker-title">Pick Your Figpal</span>
-      </Nametag>
-      <div className="relative border border-line bg-paper">
+      <div className="flex items-center justify-between">
+        <Nametag>
+          <span id="picker-title">Pick Your FigPal</span>
+        </Nametag>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close FigPal picker"
-          className="absolute left-3 top-2 z-10 flex size-11 items-center justify-center rounded-[6px] text-ink-soft hover:bg-canvas hover:text-ink sm:left-[12px] sm:top-[30px]"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-tag border border-line bg-paper text-ink-soft hover:border-select hover:text-ink"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
             <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
-        <div className="max-h-[min(441px,calc(var(--app-safe-height)-7rem))] overflow-y-auto px-4 pb-6 pt-14 sm:pl-[65px] sm:pr-[40px] sm:pt-[42px]">
-          <div role="radiogroup" aria-labelledby="picker-title" className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-1 sm:grid-cols-[repeat(5,87.4px)]">
+      </div>
+      <div className="border border-line bg-paper">
+        <div className="max-h-[min(441px,calc(var(--app-safe-height)-12rem))] overflow-y-auto px-4 py-4 sm:px-8">
+          <div role="radiogroup" aria-labelledby="picker-title" className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-1 sm:grid-cols-[repeat(5,87.4px)] sm:justify-center">
             {FIGPALS.map((figpal, index) => {
               const isSelected = figpal.slug === selected
               return (
@@ -67,7 +71,7 @@ export function FigPalPicker({ selected, onSelect, onClose }: FigPalPickerProps)
                   onKeyDown={(event) => moveSelection(event, index)}
                   aria-label={figpal.name}
                   onClick={() => onSelect(figpal.slug)}
-                  className="group relative flex h-[103.68px] flex-col items-center p-[5px] outline-none focus-visible:outline-2 focus-visible:outline-select"
+                  className="group relative flex h-[103.68px] scroll-my-3 cursor-pointer flex-col items-center p-[5px] outline-none focus-visible:outline-2 focus-visible:outline-select"
                 >
                   <SelectionFrame visible={isSelected} handles={isSelected} className="group-hover:[&>div]:border-select">
                     <div className="flex h-[93.68px] w-[77.4px] items-center justify-center pb-[5px]">
@@ -83,6 +87,11 @@ export function FigPalPicker({ selected, onSelect, onClose }: FigPalPickerProps)
               )
             })}
           </div>
+        </div>
+        <div className="flex justify-end border-t border-line px-4 py-2.5 sm:px-8">
+          <FigButton variant="quiet" className="min-h-11 px-5! text-[15px]!" onClick={onClose}>
+            Done
+          </FigButton>
         </div>
       </div>
     </section>

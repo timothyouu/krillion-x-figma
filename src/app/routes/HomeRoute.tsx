@@ -5,7 +5,6 @@ import { FigButton } from '../../components/FigButton'
 import { FigPalAvatar } from '../../components/FigPalAvatar'
 import { FigPalPicker } from '../../components/FigPalPicker'
 import { FigPalStage } from '../../components/FigPalStage'
-import { Nametag } from '../../components/Nametag'
 import { SelectionFrame } from '../../components/SelectionFrame'
 import { Stamp } from '../../components/Stamp'
 import { LoadingScreen } from '../../components/StatusPanel'
@@ -125,7 +124,31 @@ export function HomeRoute() {
 
           <form onSubmit={begin} className={`flex w-full flex-col items-center ${pickerOpen ? 'xl:pt-[260px]' : ''}`} noValidate>
             <div className="relative mt-5 w-full sm:mt-14 xl:mt-[62px]">
-              <FigPalStage slug={figpal} />
+              <FigPalStage
+                slug={figpal}
+                bob={pickerOpen}
+                avatar={pickerOpen ? undefined : (
+                  <button
+                    type="button"
+                    ref={pickerTrigger}
+                    onClick={() => {
+                      returnPickerFocus.current = true
+                      setPickerOpen(true)
+                    }}
+                    aria-label={`Change FigPal (now ${getFigPal(figpal).name})`}
+                    aria-expanded={pickerOpen}
+                    className="group relative flex cursor-pointer flex-col items-center rounded-[12px] outline-offset-4 focus-visible:outline-2 focus-visible:outline-select"
+                  >
+                    <FigPalAvatar slug={figpal} width={144} className="transition-transform duration-150 group-hover:-translate-y-1" decorative />
+                    <span className="relative flex min-h-9 items-center gap-1.5 rounded-tag border border-[#cecece] bg-paper px-2.5 text-[14px] font-medium whitespace-nowrap text-ink-soft group-hover:border-select group-hover:text-ink">
+                      Change FigPal
+                      <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
+                        <path d="m2 4 3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  </button>
+                )}
+              />
               {!pickerOpen ? <CanvasCameos scene="home" layout="compact" {...cameos} /> : null}
             </div>
 
@@ -166,22 +189,6 @@ export function HomeRoute() {
           </div>
         ) : null}
       </div>
-
-      {!pickerOpen ? (
-        <button
-          type="button"
-          ref={pickerTrigger}
-          onClick={() => {
-            returnPickerFocus.current = true
-            setPickerOpen(true)
-          }}
-          aria-label={`Change FigPal (now ${getFigPal(figpal).name})`}
-          className="absolute right-4 top-[238px] z-20 flex h-16 w-16 md:top-4 md:h-[97.68px] md:w-[81.4px] items-center justify-center rounded-tile border border-select-deep bg-select pb-[5px] transition-transform duration-150 hover:-translate-y-0.5 sm:right-8 xl:left-[1155px] xl:right-auto xl:top-[342px]"
-        >
-          <FigPalAvatar slug={figpal} width={74} className="max-w-[56px] md:max-w-none" decorative />
-          <Nametag className="absolute -bottom-3 left-1/2 -translate-x-1/2 py-[3px]! text-[12px]!">change</Nametag>
-        </button>
-      ) : null}
     </main>
   )
 }

@@ -76,7 +76,8 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 
 - Wide layout starts at 1280 px. The centered dive and status columns use Oscar’s 882 px card width. Results are capped at 1120 px and leaderboard at 1200 px. On tall displays, the dive stays within a 950 px play area and the ruler stays beside the centered composition.
 - Tablet and narrow laptop: the picker opens as its own view, and the HUD carries depth until the wide layout has room for the ruler.
-- Phone: the Change FigPal button sits beside its preview. The reveal keeps the compact tier track above the verdict so the fall is visible immediately. Below 360 px, Submit uses its own row to leave room for the answer field. Short landscape screens use a compact prompt so the field and timer stay in view.
+- The centered FigPal and its Change FigPal label open the picker on every screen size. The picker has a Done button and returns focus to the avatar.
+- Phone: The reveal keeps the compact tier track above the verdict so the fall is visible immediately. Below 360 px, Submit uses its own row to leave room for the answer field. Short landscape screens use a compact prompt so the field and timer stay in view.
 
 ## Motion
 

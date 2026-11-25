@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react'
 import glowLarge from '../assets/brand/glow-large.svg'
 import glowShadow from '../assets/brand/glow-shadow.svg'
 import { FigPalAvatar } from './FigPalAvatar'
 
 interface FigPalStageProps {
   slug: string
+  avatar?: ReactNode
   /** FigPal width; Oscar's frames use 144. */
   width?: number
   /** Show the big soft glow (home and dive); off for compact uses. */
@@ -13,7 +15,7 @@ interface FigPalStageProps {
 }
 
 /** The FigPal on its spotlight: radial glow behind, soft floor shadow below (106:9172-9175). */
-export function FigPalStage({ slug, width = 144, glow = true, bob = true, className = '' }: FigPalStageProps) {
+export function FigPalStage({ slug, avatar, width = 144, glow = true, bob = true, className = '' }: FigPalStageProps) {
   const scale = width / 144
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
@@ -29,7 +31,7 @@ export function FigPalStage({ slug, width = 144, glow = true, bob = true, classN
         />
       ) : null}
       <div className={`relative z-10 ${bob ? 'animate-bob' : ''}`}>
-        <FigPalAvatar slug={slug} width={width} decorative />
+        {avatar ?? <FigPalAvatar slug={slug} width={width} decorative />}
       </div>
       <img
         src={glowShadow}
