@@ -32,9 +32,11 @@ interface CanvasCursorsProps {
   scene: 'home' | 'dive'
   layout: 'margins' | 'compact'
   reaction?: CursorReaction
+  /** Step out to the edges (compact layout) while the timed question is up. */
+  aside?: boolean
 }
 
-export function CanvasCursors({ scene, layout, reaction }: CanvasCursorsProps) {
+export function CanvasCursors({ scene, layout, reaction, aside = false }: CanvasCursorsProps) {
   const [expiredReaction, setExpiredReaction] = useState('')
   const reactionId = reaction?.id
   const [hidden, setHidden] = useState(() => document.hidden)
@@ -56,6 +58,7 @@ export function CanvasCursors({ scene, layout, reaction }: CanvasCursorsProps) {
       aria-hidden="true"
       className={'canvas-cursors canvas-cursors--' + layout + ' canvas-cursors--' + scene}
       data-paused={hidden}
+      data-aside={aside || undefined}
     >
       {lanes.map(({ side, people }, index) => (
         <div key={side} className={'canvas-cursors__lane canvas-cursors__lane--' + side}>

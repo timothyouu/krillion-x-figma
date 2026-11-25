@@ -6,10 +6,20 @@ const SHAKE_DISTANCE = 9
 const SHAKE_REVERSALS = 3
 const SHAKE_WINDOW = 700
 const PARTNER_RADIUS = 96
+const TOUCH_PARTNER_RADIUS = 56
 const CONTACT_RADIUS = 29
+/** After a high five, pull apart this far before the same pair can slap again. */
+const REARM_DISTANCE = 48
 const HAND_SETTLE_MS = 115
 const READY_MS = 2100
-const HIGH_FIVE_MS = 550
+const HAND_LOWER_MS = 260
+/** The merged palms play for 480 ms; the cursor hands return under each pointer at 360 ms. */
+const RETURN_MS = 360
+const IMPACT_MS = 700
+const REDUCED_IMPACT_MS = 400
+const TOUCH_HOLD_MS = 350
+const TOUCH_SLOP = 10
+const TOUCH_RAISE_MS = 140
 const CONTROL = 'button, a, input, textarea, select, label, [contenteditable], [role="button"], [role="radio"], [data-no-player-cursor]'
 
 interface Point {
@@ -22,19 +32,30 @@ interface Partner extends Point {
   distance: number
 }
 
-interface Impact {
-  center: Point
-  hands: { from: Point; angle: number; color?: string }[]
+interface ImpactHand {
+  from: Point
+  angle: number
+  color?: string
+  /** Mirror the outline so the palm faces the other hand. */
+  facesRight: boolean
 }
 
-function nearbyPartner({ x, y }: Point): Partner | undefined {
+interface Impact {
+  id: number
+  center: Point
+  /** The player's hand draws in front, as in FigJam. */
+  front: ImpactHand
+  back: ImpactHand
+}
+
+function nearbyPartner({ x, y }: Point, radius = PARTNER_RADIUS): Partner | undefined {
   let nearest: Partner | undefined
   for (const element of document.querySelectorAll<HTMLElement>('.canvas-cursors__cursor')) {
     const rect = element.getBoundingClientRect()
     if (!rect.width) continue
     const tip = { x: rect.left + 2, y: rect.top + 2 }
     const distance = Math.hypot(x - tip.x, y - tip.y)
-    if (distance > PARTNER_RADIUS || distance >= (nearest?.distance ?? Infinity)) continue
+    if (distance > radius || distance >= (nearest?.distance ?? Infinity)) continue
     if (Number(getComputedStyle(element).opacity) < 0.55) continue
     nearest = { element, ...tip, distance }
   }
@@ -49,6 +70,10 @@ function handAngle(hand: Element | null | undefined): number {
   return Math.atan2(matrix.b, matrix.a) * 180 / Math.PI
 }
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+}
+
 /** Pointer decoration only. The browser still handles the underlying input and clicks. */
 export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
   const pointerRef = useRef<HTMLDivElement>(null)
@@ -58,19 +83,48 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
     const pointer = pointerRef.current
     if (!pointer) return
     const root = document.documentElement
+    const timers = new Set<number>()
     let frame = 0
     let readyTimer = 0
     let settleTimer = 0
-    let impactTimer = 0
     let event: PointerEvent | null = null
     let gesture: { time: number; x: number; direction: number; reversals: number } | null = null
     let raisedHand: { element: HTMLElement; since: number } | null = null
-    let slapping: { element: HTMLElement; origin: Point } | null = null
+    let slapping: HTMLElement | null = null
+    let needsSeparation: HTMLElement | null = null
+    let hold: { id: number; start: Point; timer: number } | null = null
+    let impactId = 0
+
+    function later(callback: () => void, ms: number): number {
+      const id = window.setTimeout(() => {
+        timers.delete(id)
+        callback()
+      }, ms)
+      timers.add(id)
+      return id
+    }
+
+    /** A partner's hand waves once more on its way down, then the arrow comes back. */
+    function lowerHandOf(element: HTMLElement) {
+      if (!element.hasAttribute('data-hand-ready') || element.hasAttribute('data-hand-lowering')) return
+      element.setAttribute('data-hand-lowering', '')
+      later(() => {
+        if (!element.hasAttribute('data-hand-lowering')) return
+        element.removeAttribute('data-hand-lowering')
+        element.removeAttribute('data-hand-ready')
+        element.removeAttribute('data-hand-return')
+        element.removeAttribute('data-face-right')
+      }, prefersReducedMotion() ? 0 : HAND_LOWER_MS)
+    }
+
+    function raiseHandOf(element: HTMLElement) {
+      element.removeAttribute('data-hand-lowering')
+      element.setAttribute('data-hand-ready', '')
+    }
 
     function lowerPartnerHand() {
       window.clearTimeout(settleTimer)
-      raisedHand?.element.removeAttribute('data-hand-ready')
-      raisedHand?.element.removeAttribute('data-face-right')
+      if (raisedHand && raisedHand.element !== slapping) lowerHandOf(raisedHand.element)
       raisedHand = null
     }
 
@@ -78,19 +132,17 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
       window.clearTimeout(readyTimer)
       pointer?.removeAttribute('data-ready')
       pointer?.removeAttribute('data-face-right')
+      pointer?.removeAttribute('data-hand-return')
       lowerPartnerHand()
+      needsSeparation = null
       if (root.getAttribute('data-figillion-pointer') === 'hand') {
         root.setAttribute('data-figillion-pointer', 'arrow')
       }
     }
 
-    function clearImpact() {
-      window.clearTimeout(impactTimer)
-      slapping?.element.removeAttribute('data-high-five')
-      slapping = null
-      if (root.getAttribute('data-figillion-pointer') === 'slap') {
-        root.setAttribute('data-figillion-pointer', 'arrow')
-      }
+    function keepHandRaised() {
+      window.clearTimeout(readyTimer)
+      readyTimer = window.setTimeout(lowerHands, READY_MS)
     }
 
     function hidePointer() {
@@ -108,7 +160,7 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
     }
 
     function trackShake(x: number, now: number) {
-      if (!pointer || slapping || pointer.hasAttribute('data-ready')) return
+      if (!pointer || pointer.hasAttribute('data-ready')) return
       if (!gesture || now - gesture.time > SHAKE_WINDOW) {
         gesture = { time: now, x, direction: 0, reversals: 0 }
         return
@@ -122,47 +174,67 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
       if (gesture.reversals >= SHAKE_REVERSALS) {
         gesture = null
         pointer.setAttribute('data-ready', '')
-        readyTimer = window.setTimeout(lowerHands, READY_MS)
+        keepHandRaised()
       }
     }
 
-    function slap(player: Point, partner: Partner) {
-      const playerAngle = handAngle(pointer?.querySelector('.canvas-player-cursor__ready'))
+    /**
+     * Contact. Like FigJam, both palms merge at the midpoint and grow for a moment, then shrink back
+     * to each cursor. Both cursors stay in hand mode, so the pair can high five again.
+     */
+    function slap(player: Point, partner: Partner, playerAngle: number) {
       const partnerAngle = handAngle(partner.element.querySelector('.canvas-cursors__hand'))
-      lowerHands()
-      slapping = { element: partner.element, origin: player }
+      const playerOnLeft = player.x < partner.x
+      const reduced = prefersReducedMotion()
+      slapping = partner.element
+      needsSeparation = partner.element
       partner.element.setAttribute('data-high-five', '')
-      const center = { x: (player.x + partner.x) / 2, y: (player.y + partner.y) / 2 }
+      pointer?.setAttribute('data-slapping', '')
+      const id = ++impactId
       setImpact({
-        center,
-        hands: [
-          { from: player, angle: playerAngle },
-          { from: { x: partner.x, y: partner.y }, angle: partnerAngle, color: partner.element.style.color },
-        ].sort((a, b) => a.from.x - b.from.x),
+        id,
+        center: { x: (player.x + partner.x) / 2, y: (player.y + partner.y) / 2 },
+        front: { from: player, angle: playerAngle, facesRight: playerOnLeft },
+        back: { from: { x: partner.x, y: partner.y }, angle: partnerAngle, color: partner.element.style.color, facesRight: !playerOnLeft },
       })
-      impactTimer = window.setTimeout(() => {
-        clearImpact()
-        setImpact(null)
-      }, HIGH_FIVE_MS)
+
+      const returnAt = reduced ? REDUCED_IMPACT_MS : RETURN_MS
+      later(() => {
+        if (impactId !== id) return
+        slapping = null
+        pointer?.removeAttribute('data-slapping')
+        partner.element.removeAttribute('data-high-five')
+        if (pointer?.hasAttribute('data-ready')) pointer.setAttribute('data-hand-return', '')
+        raiseHandOf(partner.element)
+        partner.element.setAttribute('data-hand-return', '')
+        raisedHand = { element: partner.element, since: performance.now() }
+      }, returnAt)
+      later(() => {
+        if (impactId === id) setImpact(null)
+      }, reduced ? REDUCED_IMPACT_MS : IMPACT_MS)
     }
 
     function answerWithHand(player: Point, now: number) {
+      if (slapping) return
       const hit = nearbyPartner(player)
       if (!hit) {
         lowerPartnerHand()
+        needsSeparation = null
         return
       }
 
       const playerOnLeft = player.x < hit.x
       pointer?.toggleAttribute('data-face-right', playerOnLeft)
+      if (needsSeparation === hit.element && hit.distance >= REARM_DISTANCE) needsSeparation = null
 
       if (hit.element !== raisedHand?.element) {
         lowerPartnerHand()
         raisedHand = { element: hit.element, since: now }
-        hit.element.setAttribute('data-hand-ready', '')
+        raiseHandOf(hit.element)
         settleTimer = window.setTimeout(scheduleUpdate, HAND_SETTLE_MS)
-      } else if (hit.distance <= CONTACT_RADIUS && now - raisedHand.since >= HAND_SETTLE_MS) {
-        slap(player, hit)
+      } else if (hit.distance <= CONTACT_RADIUS && now - raisedHand.since >= HAND_SETTLE_MS && needsSeparation !== hit.element) {
+        slap(player, hit, handAngle(pointer?.querySelector('.canvas-player-cursor__ready')))
+        keepHandRaised()
         return
       }
       hit.element.toggleAttribute('data-face-right', !playerOnLeft)
@@ -184,13 +256,54 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
       pointer.toggleAttribute('data-flip', x > window.innerWidth - 190)
       pointer.setAttribute('data-visible', '')
 
-      const nearImpact = slapping && Math.hypot(x - slapping.origin.x, y - slapping.origin.y) <= 32
-      const mode = nearImpact ? 'slap' : pointer.hasAttribute('data-ready') ? 'hand' : 'arrow'
+      const mode = pointer.hasAttribute('data-ready') ? 'hand' : 'arrow'
       if (root.getAttribute('data-figillion-pointer') !== mode) root.setAttribute('data-figillion-pointer', mode)
     }
 
+    function cancelHold() {
+      if (!hold) return
+      window.clearTimeout(hold.timer)
+      hold = null
+    }
+
+    /** Touch has no hover pointer: press and hold a roaming cursor to high five it. */
+    function startHold(down: PointerEvent) {
+      cancelHold()
+      if (slapping || !(down.target instanceof Element) || down.target.closest(CONTROL)) return
+      const start = { x: down.clientX, y: down.clientY }
+      if (!nearbyPartner(start, TOUCH_PARTNER_RADIUS)) return
+      hold = {
+        id: down.pointerId,
+        start,
+        timer: later(() => {
+          hold = null
+          const partner = nearbyPartner(start, TOUCH_PARTNER_RADIUS)
+          if (!partner || slapping) return
+          raiseHandOf(partner.element)
+          partner.element.toggleAttribute('data-face-right', start.x > partner.x)
+          later(() => {
+            const target = nearbyPartner(start, TOUCH_PARTNER_RADIUS + 24)
+            if (!target) {
+              lowerHandOf(partner.element)
+              return
+            }
+            slap(start, target, 0)
+            later(() => lowerHandOf(target.element), READY_MS)
+          }, TOUCH_RAISE_MS)
+        }, TOUCH_HOLD_MS),
+      }
+    }
+
+    function moveHold(next: PointerEvent) {
+      if (hold && next.pointerId === hold.id && Math.hypot(next.clientX - hold.start.x, next.clientY - hold.start.y) > TOUCH_SLOP) cancelHold()
+    }
+
     function move(next: PointerEvent) {
-      if (next.pointerType !== 'mouse' || next.buttons) {
+      if (next.pointerType !== 'mouse') {
+        moveHold(next)
+        return
+      }
+      if (next.buttons) {
         hidePointer()
         return
       }
@@ -198,24 +311,39 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
       scheduleUpdate()
     }
 
+    function down(next: PointerEvent) {
+      if (next.pointerType === 'mouse') hidePointer()
+      else startHold(next)
+    }
+
     function leave(event: PointerEvent) {
-      if (!event.relatedTarget) hidePointer()
+      if (event.pointerType === 'mouse' && !event.relatedTarget) hidePointer()
+    }
+
+    function hideAll() {
+      cancelHold()
+      hidePointer()
     }
 
     window.addEventListener('pointermove', move, { passive: true })
     window.addEventListener('pointerout', leave)
-    window.addEventListener('pointerdown', hidePointer)
-    window.addEventListener('blur', hidePointer)
-    document.addEventListener('visibilitychange', hidePointer)
+    window.addEventListener('pointerdown', down)
+    window.addEventListener('pointerup', cancelHold)
+    window.addEventListener('pointercancel', cancelHold)
+    window.addEventListener('blur', hideAll)
+    document.addEventListener('visibilitychange', hideAll)
 
     return () => {
-      hidePointer()
-      clearImpact()
+      hideAll()
+      timers.forEach((id) => window.clearTimeout(id))
+      if (slapping) slapping.removeAttribute('data-high-five')
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerout', leave)
-      window.removeEventListener('pointerdown', hidePointer)
-      window.removeEventListener('blur', hidePointer)
-      document.removeEventListener('visibilitychange', hidePointer)
+      window.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointerup', cancelHold)
+      window.removeEventListener('pointercancel', cancelHold)
+      window.removeEventListener('blur', hideAll)
+      document.removeEventListener('visibilitychange', hideAll)
     }
   }, [])
 
@@ -225,33 +353,63 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
         <span className="canvas-player-cursor__ready"><HighFiveHand /></span>
         {nickname.trim() ? <span className="canvas-player-cursor__name" dir="auto">{cleanDisplayName(nickname)}</span> : null}
       </div>
-      {impact ? <HighFiveImpact impact={impact} /> : null}
+      {impact ? <HighFiveImpact key={impact.id} impact={impact} /> : null}
     </>
   )
 }
 
-function HighFiveImpact({ impact: { center, hands } }: { impact: Impact }) {
+const BURST_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315]
+const STARS = [
+  { x: -62, y: -30, delay: 40 },
+  { x: -44, y: 38, delay: 90 },
+  { x: -8, y: -64, delay: 60 },
+  { x: 30, y: 52, delay: 110 },
+  { x: 58, y: -36, delay: 50 },
+  { x: 70, y: 18, delay: 100 },
+]
+
+function palmStyle(hand: ImpactHand, center: Point, restX: number, restAngle: number): CSSProperties {
+  return {
+    '--from-x': hand.from.x - center.x + 'px',
+    '--from-y': hand.from.y - center.y + 'px',
+    '--from-angle': hand.angle + 'deg',
+    '--rest-x': restX + 'px',
+    '--rest-angle': restAngle + 'deg',
+    '--hand-fill': hand.color ? undefined : '#fff',
+    color: hand.color,
+  } as CSSProperties
+}
+
+function HighFiveImpact({ impact: { center, front, back } }: { impact: Impact }) {
+  // The front (player) palm sits on its own side of the contact point; the back palm overlaps it.
+  const frontSide = front.facesRight ? -1 : 1
   return (
     <div aria-hidden="true" className="canvas-high-five" style={{ left: center.x, top: center.y }}>
-      {hands.map(({ from, angle, color }, index) => (
+      <span className="canvas-high-five__halo" />
+      <span className="canvas-high-five__burst">
+        {BURST_ANGLES.map((angle) => (
+          <i key={angle} style={{ '--tick-angle': angle + 'deg' } as CSSProperties} />
+        ))}
+      </span>
+      <span
+        className={'canvas-high-five__palm canvas-high-five__palm--back' + (back.facesRight ? ' canvas-high-five__palm--mirror' : '')}
+        style={palmStyle(back, center, -frontSide * 13, -frontSide * 8)}
+      >
+        <HighFiveHand />
+      </span>
+      <span
+        className={'canvas-high-five__palm canvas-high-five__palm--front' + (front.facesRight ? ' canvas-high-five__palm--mirror' : '')}
+        style={palmStyle(front, center, frontSide * 13, frontSide * 8)}
+      >
+        <HighFiveHand />
+      </span>
+      {STARS.map((star, index) => (
         <span
           key={index}
-          className={'canvas-high-five__hand canvas-high-five__hand--' + (index === 0 ? 'left' : 'right')}
-          style={{
-            '--hand-start-x': from.x - center.x + 'px',
-            '--hand-start-y': from.y - center.y + 'px',
-            '--hand-start-angle': angle + 'deg',
-            '--hand-fill': color ? undefined : '#fff',
-            color,
-          } as CSSProperties}
-        >
-          <HighFiveHand />
-        </span>
+          className="canvas-high-five__star"
+          style={{ '--star-x': star.x + 'px', '--star-y': star.y + 'px', '--star-delay': star.delay + 'ms' } as CSSProperties}
+        />
       ))}
-      <span className="canvas-high-five__spark" />
-      <span className="canvas-high-five__spark" />
-      <span className="canvas-high-five__spark" />
-      <span className="canvas-high-five__spark" />
     </div>
   )
 }
