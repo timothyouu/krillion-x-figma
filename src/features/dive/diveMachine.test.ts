@@ -220,6 +220,25 @@ describe('diveReducer: descend and surface', () => {
     expect(s.prompt).toBeNull()
   })
 
+  it('descend remembers the caught answer, tier and theme for the next descent', () => {
+    const answering = run(
+      { ...initialDiveState, phase: 'starting', round: 2 },
+      { type: 'prompt_started', prompt: startResponse(2), offsetMs: 0, nowMs: T0 + 4000 },
+    )
+    const s = run(answering, { type: 'submit', answer: 'x' }, { type: 'resolved', result: resolved(2) }, { type: 'descend' })
+    expect(s.previous).toEqual({ round: 2, theme: 'Theme', answer: 'ANSWER_PLACEHOLDER', tier: 'rare' })
+  })
+
+  it('a timed-out round is remembered with no answer', () => {
+    const answering = run(
+      { ...initialDiveState, phase: 'starting', round: 1 },
+      { type: 'prompt_started', prompt: startResponse(1), offsetMs: 0, nowMs: T0 + 4000 },
+    )
+    const timedOut = resolved(1, { accepted: false, timed_out: true, answer: null, tier: null, points: 0 })
+    const s = run(answering, { type: 'time_up' }, { type: 'resolved', result: timedOut }, { type: 'descend' })
+    expect(s.previous).toEqual({ round: 1, theme: 'Theme', answer: null, tier: null })
+  })
+
   it('after the last round, descend (Surface) finishes the dive', () => {
     const s = run({ ...initialDiveState, phase: 'reveal', round: 5 }, { type: 'descend' })
     expect(s.phase).toBe('finished')

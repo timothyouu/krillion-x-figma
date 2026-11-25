@@ -33,6 +33,14 @@ export interface RevealData {
   depthM: number
 }
 
+/** What the player just caught, kept through the next descent so the canvas can show it. */
+export interface PreviousRound {
+  round: number
+  theme: string
+  answer: string | null
+  tier: TierKey | null
+}
+
 export type DivePhase =
   | 'loading'
   | 'needs_join'
@@ -58,6 +66,8 @@ export interface DiveState {
   /** Increments on every rejected answer so the input can refocus and clear. */
   attempt: number
   reveal: RevealData | null
+  /** The round before this one, or null on the first round and after a refresh. */
+  previous: PreviousRound | null
   score: number
   depthM: number
   maxScore: number
@@ -90,6 +100,7 @@ export const initialDiveState: DiveState = {
   noEcho: null,
   attempt: 0,
   reveal: null,
+  previous: null,
   score: 0,
   depthM: 0,
   maxScore: 500,
@@ -232,7 +243,15 @@ export function diveReducer(state: DiveState, event: DiveEvent): DiveState {
     case 'descend': {
       if (state.phase !== 'reveal') return state
       if (state.round >= state.roundCount) return { ...state, phase: 'finished' }
-      return { ...state, phase: 'starting', round: state.round + 1, prompt: null, reveal: null, noEcho: null }
+      const previous: PreviousRound | null = state.reveal
+        ? {
+            round: state.reveal.round,
+            theme: state.prompt?.theme ?? '',
+            answer: state.reveal.accepted ? state.reveal.answer : null,
+            tier: state.reveal.accepted ? state.reveal.tier : null,
+          }
+        : null
+      return { ...state, phase: 'starting', round: state.round + 1, prompt: null, reveal: null, noEcho: null, previous }
     }
 
     case 'failed':

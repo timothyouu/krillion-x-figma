@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import type { PreviousRound } from '../features/dive/diveMachine'
 import { FALL_CURVE, SURFACE_MS } from '../features/dive/diveMotion'
 import { DescentBoard } from './DescentBoard'
 
@@ -8,11 +9,24 @@ interface DiveCanvasProps {
   duration: number
   cue?: string
   descending?: boolean
+  /** Board content for the descent: who is diving, how far in, and what they last caught. */
   playerName?: string
+  roundCount?: number
+  previous?: PreviousRound | null
   surfacing?: boolean
 }
 
-export function DiveCanvas({ depthM, round, duration, cue, descending = false, playerName = '', surfacing = false }: DiveCanvasProps) {
+export function DiveCanvas({
+  depthM,
+  round,
+  duration,
+  cue,
+  descending = false,
+  playerName = '',
+  roundCount = 5,
+  previous = null,
+  surfacing = false,
+}: DiveCanvasProps) {
   const offset = Math.min(5000, depthM) * 0.08 + Math.min(round, 5) * 62
   const style = {
     '--canvas-offset': -offset + 'px',
@@ -29,7 +43,16 @@ export function DiveCanvas({ depthM, round, duration, cue, descending = false, p
         <div className="dive-canvas__grid" />
       </div>
       <div className="dive-canvas__tint" />
-      {descending ? <DescentBoard key={cue} round={round} playerName={playerName} /> : null}
+      {descending ? (
+        <DescentBoard
+          key={cue}
+          round={round}
+          roundCount={roundCount}
+          playerName={playerName}
+          previous={previous}
+          depthM={depthM}
+        />
+      ) : null}
       {(cue && !descending) || surfacing ? (
         <div className="dive-canvas__guides" key={cue ?? 'surface'}>
           <span /><span /><span /><span />

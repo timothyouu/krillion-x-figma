@@ -1,25 +1,12 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { CREW, type CrewMember } from '../lib/crew'
 import type { TierKey } from '../lib/types'
 import { HighFiveHand } from './HighFiveHand'
 import { Stamp } from './Stamp'
 
-const crew = [
-  { name: 'TK', color: '#2454c5' },
-  { name: 'Joanna', color: '#a23577' },
-  { name: 'Miggi', color: '#006e62' },
-  { name: 'Alex', color: '#aa4728' },
-  { name: 'Michael', color: '#6242a3' },
-  { name: 'Ankita', color: '#9b365c' },
-  { name: 'Christian', color: '#26627b' },
-  { name: 'Srishti', color: '#5a631d' },
-  { name: 'Timmy', color: '#2250b8' },
-  { name: 'Oscar', color: '#a0441d' },
-  { name: 'Nathan', color: '#594694' },
-]
-
 const lanes = [
-  { side: 'left', people: crew.filter((_, index) => index % 2 === 0) },
-  { side: 'right', people: crew.filter((_, index) => index % 2 === 1) },
+  { side: 'left', people: CREW.filter((_, index) => index % 2 === 0) },
+  { side: 'right', people: CREW.filter((_, index) => index % 2 === 1) },
 ] as const
 
 export interface CursorReaction {
@@ -90,7 +77,7 @@ function flightStyle(): CSSProperties {
   } as CSSProperties
 }
 
-function RoamingCursor({ people, reaction }: { people: (typeof crew)[number][]; reaction?: CursorReaction }) {
+function RoamingCursor({ people, reaction }: { people: readonly CrewMember[]; reaction?: CursorReaction }) {
   const [flight, setFlight] = useState(() => ({
     step: Math.floor(Math.random() * people.length),
     style: flightStyle(),

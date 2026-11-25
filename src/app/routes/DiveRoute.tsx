@@ -89,6 +89,8 @@ export function DiveRoute() {
         cue={cue}
         descending={isDescending}
         playerName={state.displayName}
+        roundCount={state.roundCount}
+        previous={state.previous}
       />
       <DepthGauge depthM={state.depthM} duration={sinkTime || DESCENT_MS} />
       <CanvasCursors scene="dive" layout="margins" reaction={reaction} />
