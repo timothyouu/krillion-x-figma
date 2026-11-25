@@ -29,14 +29,14 @@ Each tier is a **stamp plus a lowercase word-mark** (Oscar's assets section), ne
 | Tier | Points | Depth | Stamp | Color |
 |---|---:|---:|---|---|
 | common | 10 | -100 m | Dot (pink) | `#ffa5dc` |
-| too clever | 15 | -150 m | "?" sticker (from Oscar's home) | `#f24e1e` |
+| overplayed | 15 | -150 m | Two FigPal Cursors | `#ff9e42` |
 | uncommon | 30 | -300 m | Thumbs up | `#14ae5c` |
 | rare | 60 | -600 m | Heart | `#ff7262` |
 | deep cut | 85 | -850 m | +1 | `#9747ff` |
 | figlion | 100 | -1,000 m | Star | `#ffc700` |
 | no echo (rejection, not a tier) | 0 | | Thumbs down | `#0d99ff` |
 
-Too Clever had no style in Oscar's file (specs.md open item 4); it borrows the "?" sticker from his home frame. Swap it if Oscar draws one.
+Overplayed uses two copies of the FigPal Cursor from Oscar’s assets, with an orange fill and a white sticker outline.
 
 ## Type
 

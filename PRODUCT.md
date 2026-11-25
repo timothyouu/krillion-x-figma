@@ -24,4 +24,4 @@
 
 **Design authority.** Oscar's Figma section (`home`, `figpal selection`, `questions`, `assets`) is the approved comp. New screens extend his world; see DESIGN.md.
 
-**Open items** live in specs.md section 13 (game window, round themes, final tier description lines, the Too Clever style).
+**Open items** live in specs.md section 13 (game window, round themes, and the remaining tier description lines).

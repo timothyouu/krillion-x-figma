@@ -5,7 +5,7 @@ describe('tiers', () => {
   it('match public.tiers points in order', () => {
     expect(TIERS.map((t) => [t.key, t.points])).toEqual([
       ['common', 10],
-      ['too_clever', 15],
+      ['overplayed', 15],
       ['uncommon', 30],
       ['rare', 60],
       ['deep_cut', 85],

@@ -21,7 +21,7 @@ const GAME = process.env.GAME_SLUG ?? 'practice';
 // Practice answers (public seed data in supabase/seed.sql).
 const ROUNDS = [
   { wrong: 'ramne', typo: 'perwinkle', tier: 'deep_cut', points: 85 },
-  { wrong: 'kiw', typo: 'Dragonfruit', tier: 'too_clever', points: 15 },
+  { wrong: 'kiw', typo: 'Dragonfruit', tier: 'overplayed', points: 15 },
   { timeout: true },
   { wrong: null, typo: 'go', tier: 'uncommon', points: 30 },
   { wrong: null, typo: 'Friendster', tier: 'figlion', points: 100 },

@@ -35,7 +35,7 @@ do $$ begin
   assert private.normalize_answer('Control + C') = 'ctrl c', 'control';
   assert private.normalize_answer('Auto Layout!!') = 'auto layout', 'punctuation';
   assert private.tier_key('Deep Cut') = 'deep_cut', 'tier label';
-  assert private.tier_key('too-clever') = 'too_clever', 'tier dash';
+  assert private.tier_key('  OVERPLAYED  ') = 'overplayed', 'normalize Overplayed label';
 end $$;
 
 -- ── Seed loaded ──
@@ -106,7 +106,7 @@ begin
   r := public.submit_answer('practice', 2, 'kiw');            -- 3 chars, no fuzzy
   assert (r ->> 'accepted')::boolean = false, 'short input is exact only';
   r := public.submit_answer('practice', 2, 'Dragonfruit');
-  assert r ->> 'tier' = 'too_clever' and (r ->> 'points')::int = 15, 'alias accepted';
+  assert r ->> 'tier' = 'overplayed' and (r ->> 'points')::int = 15, 'alias accepted';
 
   -- Round 3 started, then a refresh: progress shows the active round.
   perform public.start_prompt('practice', 3);

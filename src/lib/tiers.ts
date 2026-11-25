@@ -1,6 +1,6 @@
 import type { TierKey } from './types'
 import dotStamp from '../assets/stamps/dot.png'
-import questionStamp from '../assets/stamps/question.png'
+import overplayedStamp from '../assets/stamps/overplayed.svg'
 import thumbsUpStamp from '../assets/stamps/thumbs-up.png'
 import heartStamp from '../assets/stamps/heart.png'
 import plusOneStamp from '../assets/stamps/plus-one.png'
@@ -22,7 +22,7 @@ export interface TierInfo {
 // Mirrors public.tiers. The server stays the source of truth for labels in responses.
 export const TIERS: readonly TierInfo[] = [
   { key: 'common', label: 'Common', word: 'common', points: 10, description: 'The answer everyone blurts out.', color: '#ffa5dc', stamp: dotStamp },
-  { key: 'too_clever', label: 'Too Clever', word: 'too clever', points: 15, description: 'The "obscure" pick that everyone else thought of too.', color: '#f24e1e', stamp: questionStamp },
+  { key: 'overplayed', label: 'Overplayed', word: 'overplayed', points: 15, description: "The 'obscure' pick plenty of others thought of too.", color: '#ff9e42', stamp: overplayedStamp },
   { key: 'uncommon', label: 'Uncommon', word: 'uncommon', points: 30, description: 'Solid. Real Figma users know this one.', color: '#14ae5c', stamp: thumbsUpStamp },
   { key: 'rare', label: 'Rare', word: 'rare', points: 60, description: 'Power-user territory.', color: '#ff7262', stamp: heartStamp },
   { key: 'deep_cut', label: 'Deep Cut', word: 'deep cut', points: 85, description: 'Seriously deep in the docs.', color: '#9747ff', stamp: plusOneStamp },

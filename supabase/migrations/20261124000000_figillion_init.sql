@@ -40,7 +40,7 @@ create table public.tiers (
 
 insert into public.tiers (key, label, points, description, sort_order) values
   ('common',     'Common',     10,  'The answer everyone blurts out.',                         1),
-  ('too_clever', 'Too Clever', 15,  'The "obscure" pick that everyone else thought of too.',   2),
+  ('overplayed', 'Overplayed', 15,  'The ''obscure'' pick plenty of others thought of too.',   2),
   ('uncommon',   'Uncommon',   30,  'Solid. Real Figma users know this one.',                  3),
   ('rare',       'Rare',       60,  'Power-user territory.',                                   4),
   ('deep_cut',   'Deep Cut',   85,  'Seriously deep in the docs.',                             5),

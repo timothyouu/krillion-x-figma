@@ -8,7 +8,7 @@
       "prompt": "Name a color",
       "answers": [
         { "answer": "Red", "aliases": [], "tier": "common" },
-        { "answer": "Teal", "aliases": [], "tier": "too_clever" },
+        { "answer": "Teal", "aliases": [], "tier": "overplayed" },
         { "answer": "Magenta", "aliases": [], "tier": "uncommon" },
         { "answer": "Cerulean", "aliases": [], "tier": "rare" },
         { "answer": "Vermilion", "aliases": ["vermillion"], "tier": "deep_cut" },

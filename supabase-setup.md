@@ -127,7 +127,7 @@ Ankita keeps the real content in a **private Google Sheet** with two tabs. The h
 | midyear-2026 | 1 | Pixel preview (Ctrl P) | pixel preview | figlion | Shows exactly how a design renders at 1x. |
 
 - `aliases`: other spellings separated by `|`. The fuzzy match only forgives one typo, so add real variants (Mac/Windows forms, abbreviations).
-- `tier`: `common`, `too_clever`, `uncommon`, `rare`, `deep_cut`, `figlion` (labels like "Deep Cut" also work).
+- `tier`: `common`, `overplayed`, `uncommon`, `rare`, `deep_cut`, `figlion` (labels like "Deep Cut" also work).
 - `fun_fact`: only needed for figlion answers; it shows at the top of the Catch.
 
 Steps:

@@ -1,7 +1,7 @@
 // Shapes returned by the Supabase RPCs in
 // supabase/migrations/20261124000000_figillion_init.sql. Keep in sync with that file.
 
-export type TierKey = 'common' | 'too_clever' | 'uncommon' | 'rare' | 'deep_cut' | 'figlion'
+export type TierKey = 'common' | 'overplayed' | 'uncommon' | 'rare' | 'deep_cut' | 'figlion'
 
 export type GameStatus = 'upcoming' | 'open' | 'closed'
 

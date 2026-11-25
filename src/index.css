@@ -21,7 +21,7 @@
 
   /* Tier colors, sampled from each tier's stamp. */
   --color-tier-common: #ffa5dc;
-  --color-tier-too-clever: #f24e1e;
+  --color-tier-overplayed: #ff9e42;
   --color-tier-uncommon: #14ae5c;
   --color-tier-rare: #ff7262;
   --color-tier-deep-cut: #9747ff;

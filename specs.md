@@ -33,7 +33,7 @@ I played a full Unlimited dive on krillion.io in Chrome and read the official ho
 | Input | One text box ("type one answer…"), a **Dive** button, Enter submits, circular timer beside the input. |
 | Rejected answer | Inline message `"ramne": no echo. try again`. The clock keeps running and **you can retry until time is up**. |
 | Typos | One-letter typos are autocorrected ("bonbo" → Bonobo). A two-letter swap ("ramne") is rejected. |
-| Accepted answer | The answer card sinks past horizontal tier lines (PLANKTON · 10, TOO CLEVER · 15 … ONE IN A KRILLION · 100) and stops at its tier. |
+| Accepted answer | The answer card sinks past horizontal tier lines (PLANKTON · 10, … ONE IN A KRILLION · 100) and stops at its tier. |
 | Reveal card | Tier name, canonical answer, `+10 PTS · sink 100m`, and a one-line description of the tier ("The answer everyone blurts out."). |
 | Timeout | `NOTHING LANDED · + 0 PTS · the clock beat you to it.` |
 | Between prompts | A **Descend** button; the player controls when the next prompt starts. |
@@ -59,7 +59,7 @@ I played a full Unlimited dive on krillion.io in Chrome and read the official ho
 | Tier (UI label) | Key | Points | Depth | Description line (draft, Oscar/Ankita can rewrite) |
 |---|---|---:|---:|---|
 | Common | `common` | 10 | 100 m | The answer everyone blurts out. |
-| Too Clever | `too_clever` | 15 | 150 m | The "obscure" pick that everyone else thought of too. |
+| Overplayed | `overplayed` | 15 | 150 m | The 'obscure' pick plenty of others thought of too. |
 | Uncommon | `uncommon` | 30 | 300 m | Solid. Real Figma users know this one. |
 | Rare | `rare` | 60 | 600 m | Power-user territory. |
 | Deep Cut | `deep_cut` | 85 | 850 m | Seriously deep in the docs. |
@@ -184,7 +184,7 @@ The same columns as JSON, used by `questions.example.json` and any local script:
 | Christian Garcia | Supabase project: review and run the migration, anonymous auth, content import, game window, monitoring on the day |
 | Ankita | All prompts and answer lists with tiers, aliases and figlion fun facts, in the private sheet |
 | Srishti Jha | **OPEN:** role not assigned |
-| Nathan, Oscar | Screens and graphics; Oscar's section is the design target; Oscar adds the Too Clever tier style |
+| Nathan, Oscar | Screens and graphics; Oscar's section is the design target |
 
 ## 7. Tech stack
 
@@ -345,5 +345,5 @@ Content import (SQL Editor only, not callable from the app): `private.publish_im
 1. **Game window:** who opens and closes the game for Dec 8, and when?
 2. **Round themes** for the 5 prompts (Ankita).
 3. **Srishti's role.**
-4. **Tier description lines** and the Too Clever tier style (Oscar).
+4. **Remaining tier description lines** (Oscar/Ankita).
 5. **Make the repo private?** Not required with the storage rules above, but it would remove one way to leak content by accident.
