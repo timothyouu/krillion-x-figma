@@ -3,8 +3,8 @@
 /* Tokens: Oscar's Figillion frames (Figma file QLmoeEgdhjwgqjQhcbopeq, section "oscar")
    plus the Figma for Edu Brand Book. See DESIGN.md. */
 @theme {
-  --font-sans: 'Geist', 'Figma Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono', 'Figma Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --color-ink: #000000;
   --color-ink-strong: #161616;

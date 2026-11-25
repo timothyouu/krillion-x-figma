@@ -102,12 +102,10 @@ export function HomeRoute() {
       >
         <div className={`flex w-full flex-col items-center ${pickerOpen ? 'lg:order-1' : ''}`}>
           {/* title block (108:10077) */}
-          {/* Oscar's block is 476 px wide with the 20 px line set on one row; Geist sets wider than
-              Figma Sans, so the line may overhang the block, as it does in his frame. */}
           <header
             className={`flex w-full max-w-[476px] flex-col items-center gap-3 text-center leading-[normal] lg:pt-[118px] ${pickerOpen ? 'lg:hidden' : ''}`}
           >
-            <p className="text-[28px] sm:text-[40px]">Figma for Edu</p>
+            <p className="text-[28px] tracking-[-0.025em] sm:text-[40px]">Figma for Edu</p>
             <h1 className="font-mono text-[48px] leading-[normal] tracking-[0.02em] sm:text-[80px]">FIGILLION</h1>
             <p className="text-[16px] text-[#3f3f3f] sm:whitespace-nowrap sm:text-[20px]">
               {roundCount} Prompts · {seconds} Seconds · Rarer Answers Dive Deeper
@@ -188,12 +186,12 @@ function HomeStickers({ pickerOpen }: { pickerOpen: boolean }) {
   }
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 hidden md:block">
-      <Stamp kind="question" size={88} rotate={-10} className="absolute left-[18%] top-[110px] lg:left-[258px]" />
-      <Stamp kind="star" size={84} rotate={8} className="absolute left-[25%] top-[180px] lg:left-[333px]" />
-      <Stamp kind="plus-one" size={66} rotate={-6} className="absolute left-[10%] top-[218px] lg:left-[138px]" />
-      <Stamp kind="heart" size={88} rotate={14} className="absolute right-[22%] top-[118px] lg:left-[858px] lg:right-auto" />
-      <Stamp kind="thumbs-up" size={78} rotate={-8} className="absolute right-[15%] top-[198px] lg:left-[970px] lg:right-auto" />
-      <Stamp kind="dot" size={74} rotate={0} className="absolute right-[8%] top-[160px] lg:left-[1080px] lg:right-auto" />
+      <Stamp kind="question" size={88} rotate={-10} className="absolute left-[7%] top-[104px] lg:left-[258px] lg:top-[110px]" />
+      <Stamp kind="star" size={84} rotate={8} className="absolute left-[2%] top-[176px] lg:left-[333px] lg:top-[180px]" />
+      <Stamp kind="plus-one" size={66} rotate={-6} className="absolute left-[9%] top-[233px] lg:left-[138px] lg:top-[218px]" />
+      <Stamp kind="heart" size={88} rotate={14} className="absolute right-[6%] top-[128px] lg:left-[858px] lg:right-auto lg:top-[118px]" />
+      <Stamp kind="thumbs-up" size={78} rotate={-8} className="absolute right-[5%] top-[221px] lg:left-[970px] lg:right-auto lg:top-[198px]" />
+      <Stamp kind="dot" size={74} rotate={0} className="absolute right-[1%] top-[176px] lg:left-[1080px] lg:right-auto lg:top-[160px]" />
     </div>
   )
 }

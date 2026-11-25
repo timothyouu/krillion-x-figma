@@ -40,7 +40,7 @@ Overplayed uses two copies of the FigPal Cursor from Oscar’s assets, with an o
 
 ## Type
 
-Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. Closest Google Fonts stand-ins: **Geist** (sans) and **Geist Mono** (mono), loaded in `index.html`. The timer's "Digital Numbers" face is replaced by an SVG seven-segment component (`SevenSegment`) with ghosted "00" segments, matching his look without a font.
+Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. Closest Google Fonts stand-ins: **Instrument Sans** and **IBM Plex Mono**, loaded in `index.html`. The 1280 × 832 comparisons favored Instrument Sans for body width and stroke weight and IBM Plex Mono for prompt width and letter height. The timer's "Digital Numbers" face is replaced by an SVG seven-segment component (`SevenSegment`) with ghosted "00" segments, matching his look without a font.
 
 | Role | Face | Size (desktop) |
 |---|---|---|
