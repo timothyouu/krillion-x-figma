@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CanvasCameos, useCanvasCameos } from '../../components/CanvasCameos'
+import { CanvasCursors } from '../../components/CanvasCursors'
+import { CanvasPlayerCursor } from '../../components/CanvasPlayerCursor'
 import { FigButton } from '../../components/FigButton'
 import { FigPalAvatar } from '../../components/FigPalAvatar'
 import { FigPalPicker } from '../../components/FigPalPicker'
@@ -21,7 +22,6 @@ type Boot = { status: 'loading' } | { status: 'ready'; game: GameInfo | null; pl
 /** Home (106:9171) and FigPal selection (10:8249): name, FigPal, Begin Descent. */
 export function HomeRoute() {
   const navigate = useNavigate()
-  const cameos = useCanvasCameos('home')
   const [boot, setBoot] = useState<Boot>({ status: 'loading' })
   const [name, setName] = useState(() => loadDraft().name)
   const [figpal, setFigpal] = useState(() => loadDraft().figpal ?? DEFAULT_FIGPAL)
@@ -103,7 +103,8 @@ export function HomeRoute() {
   return (
     <main className="relative mx-auto min-h-[var(--app-safe-height)] w-full max-w-[1280px] overflow-hidden px-4 sm:px-8">
       <HomeStickers pickerOpen={pickerOpen} />
-      {!pickerOpen ? <CanvasCameos scene="home" layout="margins" {...cameos} /> : null}
+      {!pickerOpen ? <CanvasPlayerCursor nickname={name} /> : null}
+      {!pickerOpen ? <CanvasCursors scene="home" layout="margins" /> : null}
 
       <div
         className={`relative z-10 mx-auto flex min-h-[var(--app-safe-height)] w-full flex-col items-center py-10 xl:py-0 ${
@@ -149,7 +150,7 @@ export function HomeRoute() {
                   </button>
                 )}
               />
-              {!pickerOpen ? <CanvasCameos scene="home" layout="compact" {...cameos} /> : null}
+              {!pickerOpen ? <CanvasCursors scene="home" layout="compact" /> : null}
             </div>
 
             <div className="mt-2 flex w-full max-w-[420px] flex-col items-center gap-4 sm:mt-0 sm:gap-6">

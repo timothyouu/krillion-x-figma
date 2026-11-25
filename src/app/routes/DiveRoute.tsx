@@ -1,6 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { CanvasCameos, useCanvasCameos } from '../../components/CanvasCameos'
+import { CanvasCursors, type CursorReaction } from '../../components/CanvasCursors'
+import { CanvasPlayerCursor } from '../../components/CanvasPlayerCursor'
 import { AnswerInput } from '../../components/AnswerInput'
 import { DepthGauge } from '../../components/DepthGauge'
 import { DiveCanvas } from '../../components/DiveCanvas'
@@ -24,9 +25,20 @@ function readAutoStart(state: unknown): boolean {
   return typeof state === 'object' && state !== null && (state as { autoStart?: unknown }).autoStart === true
 }
 
+function guessReaction(state: DiveState): CursorReaction | undefined {
+  const { reveal, round, attempt, noEcho, phase } = state
+  if (phase === 'reveal' && reveal) {
+    const tier = reveal.tier ?? 'no_echo'
+    const kind = !reveal.accepted ? 'timeout' : reveal.points >= 60 ? 'rare' : 'landed'
+    return { id: `reveal-${round}`, kind, tier }
+  }
+  if (phase === 'answering' && noEcho !== null && attempt > 0) {
+    return { id: `miss-${round}-${attempt}`, kind: 'no-echo', tier: 'no_echo' }
+  }
+}
+
 export function DiveRoute() {
   const navigate = useNavigate()
-  const cameos = useCanvasCameos('dive')
   const location = useLocation()
   const surfaced = useRef(false)
   const { state, countdownLeft, submit, start, descend, retry } = useDive(readAutoStart(location.state))
@@ -45,6 +57,7 @@ export function DiveRoute() {
     return <LoadingScreen />
   }
 
+  const reaction = guessReaction(state)
   const sinkTime = state.reveal?.accepted ? sinkDurationMs(state.reveal.tier) : 0
   const isDescending = state.phase === 'starting' || state.phase === 'countdown'
   const cue = sinkTime > 0 ? 'land-' + state.round : isDescending ? 'descend-' + state.round : undefined
@@ -64,10 +77,11 @@ export function DiveRoute() {
         entering={isDescending && state.round === 1}
       />
       <DepthGauge depthM={state.depthM} duration={sinkTime || DESCENT_MS} />
-      <CanvasCameos scene="dive" layout="margins" {...cameos} />
+      <CanvasCursors scene="dive" layout="margins" reaction={reaction} />
+      <CanvasPlayerCursor nickname={state.displayName} />
       <main className="relative z-10 mx-auto flex min-h-[min(950px,var(--app-safe-height))] w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0">
         <Hud state={state} motionDuration={sinkTime || DESCENT_MS} />
-        <DiveBody state={state} countdownLeft={countdownLeft} sinkTime={sinkTime} cameos={cameos} submit={submit} start={start} descend={advance} />
+        <DiveBody state={state} countdownLeft={countdownLeft} sinkTime={sinkTime} reaction={reaction} submit={submit} start={start} descend={advance} />
       </main>
     </>
   )
@@ -98,13 +112,13 @@ interface DiveBodyProps {
   state: DiveState
   countdownLeft: number | null
   sinkTime: number
-  cameos: ReturnType<typeof useCanvasCameos>
+  reaction?: CursorReaction
   submit: (answer: string) => void
   start: () => void
   descend: () => void
 }
 
-function DiveBody({ state, countdownLeft, sinkTime, cameos, submit, start, descend }: DiveBodyProps) {
+function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, descend }: DiveBodyProps) {
   const live = state.phase === 'countdown' || state.phase === 'answering' || state.phase === 'checking'
   const clock = useCountdown(state.prompt, live)
   const lastRound = state.round >= state.roundCount
@@ -114,7 +128,7 @@ function DiveBody({ state, countdownLeft, sinkTime, cameos, submit, start, desce
     return (
       <>
         <RevealCard reveal={state.reveal} roundCount={state.roundCount} promptText={state.prompt?.text ?? null} figpalSlug={state.figpalSlug} />
-        <Stage slug={sinkTime ? state.figpalSlug : undefined} cameos={cameos} sinkTime={sinkTime} sinkDepth={state.reveal.depthM} />
+        <Stage reaction={reaction} slug={sinkTime ? state.figpalSlug : undefined} sinkTime={sinkTime} sinkDepth={state.reveal.depthM} />
         <nav className="flex justify-center pt-2">
           <FigButton icon={lastRound ? 'up' : 'down'} onClick={descend} ref={focusAdvance}>
             {lastRound ? 'Surface' : 'Descend'}
@@ -141,7 +155,7 @@ function DiveBody({ state, countdownLeft, sinkTime, cameos, submit, start, desce
             </p>
           </div>
         </section>
-        <Stage slug={state.figpalSlug} cameos={cameos} />
+        <Stage slug={state.figpalSlug} />
         <nav className="flex justify-center pt-2">
           <FigButton icon="down" onClick={start} disabled={waiting} ref={focusAdvance}>
             Descend
@@ -173,7 +187,7 @@ function DiveBody({ state, countdownLeft, sinkTime, cameos, submit, start, desce
         text={pending ? 'Descending…' : (prompt?.text ?? '')}
         subline={subline}
       />
-      <Stage slug={state.figpalSlug} cameos={cameos} descending={pending} />
+      <Stage slug={state.figpalSlug} descending={pending} reaction={reaction} />
       <div className="flex flex-col gap-1">
         <NoEchoMessage input={state.noEcho} attempt={state.attempt} />
         <AnswerInput
@@ -196,13 +210,13 @@ function focusAdvance(button: HTMLButtonElement | null) {
 
 interface StageProps {
   slug?: string
-  cameos: ReturnType<typeof useCanvasCameos>
+  reaction?: CursorReaction
   descending?: boolean
   sinkTime?: number
   sinkDepth?: number
 }
 
-function Stage({ slug, cameos, descending = false, sinkTime = 0, sinkDepth = 0 }: StageProps) {
+function Stage({ slug, reaction, descending = false, sinkTime = 0, sinkDepth = 0 }: StageProps) {
   const sinking = sinkTime > 0
   const sinkStyle = sinking ? {
     '--figpal-distance': Math.min(120, 40 + sinkDepth * 0.08) + 'px',
@@ -211,7 +225,7 @@ function Stage({ slug, cameos, descending = false, sinkTime = 0, sinkDepth = 0 }
 
   return (
     <div className={'relative flex min-h-4 flex-1 items-center justify-center py-2 sm:py-4 [@media(max-height:520px)]:py-0 ' + (sinking ? 'overflow-clip' : '')}>
-      <CanvasCameos scene="dive" layout="compact" {...cameos} />
+      <CanvasCursors scene="dive" layout="compact" reaction={reaction} />
       {slug ? (
         <div
           className={'hidden sm:[@media(min-height:761px)]:block ' + (sinking ? 'dive-figpal-sink' : '')}
