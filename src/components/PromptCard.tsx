@@ -21,9 +21,11 @@ export function PromptCard({ round, roundCount, theme, text, subline }: PromptCa
       </Nametag>
       <div className="relative w-full overflow-hidden border border-line bg-paper px-6 py-8 sm:p-12 lg:p-16 [@media(max-height:520px)]:px-6 [@media(max-height:520px)]:py-4">
         <div className="relative z-10 flex max-w-[640px] flex-col gap-5 [@media(max-height:520px)]:gap-2">
+          {/* Keyed by text: the countdown line is wiped away top-down by the prompt in the same frame. */}
           <h1
+            key={text}
             id="prompt-text"
-            className="font-mono text-[32px] leading-[1.15] font-medium text-balance sm:text-[40px] lg:text-[50px] [@media(max-height:520px)]:text-[30px]"
+            className="prompt-text font-mono text-[32px] leading-[1.15] font-medium text-balance sm:text-[40px] lg:text-[50px] [@media(max-height:520px)]:text-[30px]"
           >
             {text}
           </h1>

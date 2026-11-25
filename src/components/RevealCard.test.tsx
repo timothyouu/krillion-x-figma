@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { sinkDurationMs } from '../features/dive/diveMotion'
 import { RevealCard } from './RevealCard'
 import type { RevealData } from '../features/dive/diveMachine'
 
@@ -23,6 +24,21 @@ describe('RevealCard', () => {
     expect(screen.getByText(/sink 850 m/)).toBeInTheDocument()
     expect(screen.getByText('Seriously deep in the docs.')).toBeInTheDocument()
     expect(screen.getByText(/answr_placeholder/)).toBeInTheDocument()
+  })
+
+  it('announces a landed verdict when the chip lands, not while it falls', () => {
+    vi.useFakeTimers()
+    try {
+      const { container } = render(<RevealCard reveal={landed} roundCount={5} promptText={null} />)
+      const live = container.querySelector('[aria-live="polite"]')
+      expect(live?.textContent).toBe('')
+      act(() => {
+        vi.advanceTimersByTime(sinkDurationMs('deep_cut'))
+      })
+      expect(live?.textContent).toMatch(/Landed deep cut\. 85 points/)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('shows "nothing landed" when the clock won', () => {

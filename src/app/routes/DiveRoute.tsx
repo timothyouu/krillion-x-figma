@@ -19,7 +19,9 @@ import { DESCENT_MS, sinkDurationMs } from '../../features/dive/diveMotion'
 import type { DiveState } from '../../features/dive/diveMachine'
 import { useCountdown } from '../../features/dive/useCountdown'
 import { useDive } from '../../features/dive/useDive'
+import { primeResults } from '../../features/results/useResults'
 import { formatDepth } from '../../lib/tiers'
+import { loadResultsRoute } from './lazyRoutes'
 
 function readAutoStart(state: unknown): boolean {
   return typeof state === 'object' && state !== null && (state as { autoStart?: unknown }).autoStart === true
@@ -42,6 +44,15 @@ export function DiveRoute() {
   const location = useLocation()
   const surfaced = useRef(false)
   const { state, countdownLeft, submit, start, descend, retry } = useDive(readAutoStart(location.state))
+  const lastReveal = state.phase === 'reveal' && state.round >= state.roundCount
+
+  // The server marks the dive finished when the last round resolves. Fetch the results route and
+  // data during the last reveal, so Surface goes straight to the rising results page.
+  useEffect(() => {
+    if (!lastReveal) return
+    void loadResultsRoute()
+    primeResults()
+  }, [lastReveal])
 
   useEffect(() => {
     if (state.phase === 'needs_join') navigate('/', { replace: true })
@@ -51,7 +62,8 @@ export function DiveRoute() {
     }
   }, [state.phase, navigate])
 
-  if (state.phase === 'finished' && surfaced.current) return <LoadingScreen label="surfacing" />
+  // Keep the canvas (not a loading screen) for the frame before /results takes over the surfacing.
+  if (state.phase === 'finished' && surfaced.current) return <DiveCanvas depthM={state.depthM} round={state.round} duration={DESCENT_MS} />
   if (state.phase === 'error' && state.error) return <ErrorScreen code={state.error} onRetry={retry} />
   if (state.phase === 'loading' || state.phase === 'needs_join' || state.phase === 'closed' || state.phase === 'finished') {
     return <LoadingScreen />
@@ -122,7 +134,6 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
   const live = state.phase === 'countdown' || state.phase === 'answering' || state.phase === 'checking'
   const clock = useCountdown(state.prompt, live)
   const lastRound = state.round >= state.roundCount
-  const preparing = state.phase === 'starting' && countdownLeft !== null
 
   if (state.phase === 'reveal' && state.reveal) {
     return (
@@ -138,8 +149,7 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
     )
   }
 
-  if (state.phase === 'between' || (state.phase === 'starting' && !preparing)) {
-    const waiting = state.phase === 'starting'
+  if (state.phase === 'between') {
     return (
       <>
         <section className="flex w-full flex-col gap-[5px]" aria-live="polite">
@@ -147,17 +157,13 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
             Prompt {state.round} of {state.roundCount}
           </Nametag>
           <div className="flex min-h-[220px] flex-col justify-center gap-4 border border-line bg-paper px-6 py-10 sm:px-16">
-            <p className="font-mono text-[32px] font-medium leading-[1.15] sm:text-[44px]">
-              {waiting ? 'descending…' : 'Next prompt is waiting.'}
-            </p>
-            <p className="text-[18px] text-ink-soft sm:text-[20px]">
-              {waiting ? 'Fetching your prompt from the deep.' : 'The clock starts 3 seconds after you descend.'}
-            </p>
+            <p className="font-mono text-[32px] font-medium leading-[1.15] sm:text-[44px]">Next prompt is waiting.</p>
+            <p className="text-[18px] text-ink-soft sm:text-[20px]">The clock starts 3 seconds after you descend.</p>
           </div>
         </section>
         <Stage slug={state.figpalSlug} />
         <nav className="flex justify-center pt-2">
-          <FigButton icon="down" onClick={start} disabled={waiting} ref={focusAdvance}>
+          <FigButton icon="down" onClick={start} ref={focusAdvance}>
             Descend
           </FigButton>
         </nav>
@@ -165,13 +171,19 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
     )
   }
 
-  // countdown, answering, checking, finishing
+  // starting (countdown, then fetching the prompt), countdown, answering, checking, finishing
   const prompt = state.prompt
-  if (!prompt && !preparing) return null
-  const pending = preparing || clock?.phase === 'countdown'
-  const seconds = state.phase === 'finishing' ? 0 : (countdownLeft ?? clock?.displaySeconds ?? 0)
+  const starting = state.phase === 'starting'
+  if (!prompt && !starting) return null
+  const pending = starting || clock?.phase === 'countdown'
+  let seconds = clock?.displaySeconds ?? 0
+  if (state.phase === 'finishing') seconds = 0
+  else if (starting && countdownLeft !== null) seconds = countdownLeft
+  else if (starting && !prompt) seconds = state.countdownSeconds
   let subline = 'Rarer answers dive deeper'
-  if (pending) subline = `The clock starts in ${seconds}`
+  // Resuming after a refresh: the server clock is already running, so there is no countdown to show.
+  const resuming = starting && prompt !== null && countdownLeft === null
+  if (pending) subline = seconds > 0 && !resuming ? `The clock starts in ${seconds}` : 'Here it comes'
   else if (state.phase === 'checking') subline = 'checking the depths…'
   else if (state.phase === 'finishing') subline = 'time’s up · surfacing…'
 
@@ -180,14 +192,14 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
   return (
     <>
       <PromptCard
-        key={state.round + (pending ? '-countdown' : '-question')}
+        key={state.round}
         round={state.round}
         roundCount={state.roundCount}
         theme={pending ? '' : (prompt?.theme ?? '')}
         text={pending ? 'Descending…' : (prompt?.text ?? '')}
         subline={subline}
       />
-      <Stage slug={state.figpalSlug} descending={pending} reaction={reaction} />
+      <Stage slug={state.figpalSlug} descending={pending} reaction={reaction} aside={!pending} />
       <div className="flex flex-col gap-1">
         <NoEchoMessage input={state.noEcho} attempt={state.attempt} />
         <AnswerInput
@@ -196,6 +208,7 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
           checking={state.phase === 'checking'}
           seconds={seconds}
           pending={pending}
+          expired={state.phase === 'finishing'}
           fractionLeft={state.phase === 'finishing' ? 0 : (clock?.fractionLeft ?? 1)}
           onSubmit={submit}
         />
@@ -212,11 +225,13 @@ interface StageProps {
   slug?: string
   reaction?: CursorReaction
   descending?: boolean
+  /** The timed question is up: compact cursors step out of the way of the prompt and input. */
+  aside?: boolean
   sinkTime?: number
   sinkDepth?: number
 }
 
-function Stage({ slug, reaction, descending = false, sinkTime = 0, sinkDepth = 0 }: StageProps) {
+function Stage({ slug, reaction, descending = false, aside = false, sinkTime = 0, sinkDepth = 0 }: StageProps) {
   const sinking = sinkTime > 0
   const sinkStyle = sinking ? {
     '--figpal-distance': Math.min(120, 40 + sinkDepth * 0.08) + 'px',
@@ -225,7 +240,7 @@ function Stage({ slug, reaction, descending = false, sinkTime = 0, sinkDepth = 0
 
   return (
     <div className={'relative flex min-h-4 flex-1 items-center justify-center py-2 sm:py-4 [@media(max-height:520px)]:py-0 ' + (sinking ? 'overflow-clip' : '')}>
-      <CanvasCursors scene="dive" layout="compact" reaction={reaction} />
+      <CanvasCursors scene="dive" layout="compact" reaction={reaction} aside={aside} />
       {slug ? (
         <div
           className={'hidden sm:[@media(min-height:761px)]:block ' + (sinking ? 'dive-figpal-sink' : '')}

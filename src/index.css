@@ -124,10 +124,75 @@
   }
 }
 
+/* Held above the canvas, the stamp accelerates down, makes contact at 48% (110 ms), then settles.
+   The shadow goes from lifted to flush at contact, so the press reads as touching paper. */
 @keyframes stamp-press {
-  0% { scale: 1.28; }
-  58% { scale: 0.92; }
-  100% { scale: 1; }
+  0% {
+    opacity: 0;
+    scale: 1.35;
+    filter: drop-shadow(0 9px 9px rgb(32 38 52 / 0.2));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+  }
+  26% { opacity: 1; }
+  48% {
+    scale: 0.94;
+    filter: drop-shadow(0 1px 1px rgb(32 38 52 / 0.22));
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.12));
+  }
+}
+
+/* A thin ring in the tier colour spreads from the stamp at the moment of contact. */
+@keyframes stamp-ink {
+  0% { opacity: 0.6; transform: scale(0.62); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes reveal-thud {
+  0%, 100% { translate: 0 0; }
+  40% { translate: 0 2px; }
+}
+
+@keyframes verdict-rise {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes verdict-ghost-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes prompt-wipe {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 -12% 0); }
+}
+
+/* The answer leaves the box as a selected object: up, a slight tilt, a growing shadow. */
+@keyframes answer-pickup {
+  from { transform: translate(0, 0) rotate(0); filter: drop-shadow(0 0 0 rgb(32 38 52 / 0)); }
+  to { transform: translate(4px, -14px) rotate(-2deg); filter: drop-shadow(0 6px 8px rgb(32 38 52 / 0.18)); }
+}
+
+/* No echo: the dropped object snaps back into the box, shakes, and is gone. */
+@keyframes answer-snapback {
+  0% { opacity: 1; transform: translate(4px, -14px) rotate(-2deg); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0); }
+  38% { transform: translate(0, 0) rotate(0); animation-timing-function: ease-out; }
+  55% { transform: translate(-5px, 0); }
+  72% { transform: translate(3px, 0); opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+
+@keyframes handle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
 }
 
 @keyframes tier-sink {
@@ -187,11 +252,14 @@
   100% { transform: translateY(0) scale(1); }
 }
 
+/* Opacity only: a sliding card would cancel the chip's lift before the fall. */
 @keyframes reveal-frame {
-  from { opacity: 0.86; transform: translateY(-16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0.55; }
+  to { opacity: 1; }
 }
 
+/* Transform only: fading the whole results page makes the compositor blend a full-screen layer
+   on every frame of the rise. */
 @keyframes results-rise {
   from { transform: translateY(66px); }
   to { transform: translateY(0); }
@@ -229,7 +297,81 @@
 }
 
 .animate-stamp {
-  animation: stamp-press 310ms var(--ease-sink) var(--stamp-delay, 0ms);
+  /* backwards: the stamp is not on the canvas until it presses. */
+  animation: stamp-press 230ms linear var(--stamp-delay, 0ms) backwards;
+}
+
+/* ---------- Reveal: the verdict waits for the chip to land ---------- */
+
+.reveal-verdict[data-holding] .reveal-line {
+  animation: verdict-rise 200ms cubic-bezier(0.16, 1, 0.3, 1)
+    calc(var(--land-at) + var(--verdict-lead) + var(--verdict-index, 0) * var(--verdict-stagger)) backwards;
+}
+
+.reveal-verdict__ghost {
+  position: absolute;
+  inset: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #9acbec;
+  color: var(--color-mute);
+  font: 13px var(--font-mono);
+  pointer-events: none;
+  animation: verdict-ghost-out 120ms ease-out var(--land-at) forwards;
+}
+
+.stamp-ink {
+  position: absolute;
+  inset: 6%;
+  border: 2px solid var(--ink-color);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  /* No fill: the ring stays invisible (opacity 0) until contact, then spreads once. */
+  animation: stamp-ink 260ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--land-at) + 110ms);
+}
+
+.reveal-thud {
+  animation: reveal-thud 150ms ease-out calc(var(--land-at) + 110ms);
+}
+
+/* ---------- Answer box: pickup, snap-back, urgency, timeout ---------- */
+
+.answer-lift {
+  position: absolute;
+  top: calc(50% - 17px);
+  left: 12px;
+  z-index: 2;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
+  transform: translate(4px, -14px) rotate(-2deg);
+  animation: answer-pickup 160ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.answer-lift--return {
+  animation: answer-snapback 260ms linear forwards;
+}
+
+.answer-box--urgent .selection-handle {
+  animation: handle-pulse 1s ease-in-out infinite;
+}
+
+.answer-box .selection-handle,
+.answer-box .selection-box {
+  transition: opacity 200ms ease-out, border-color 200ms ease-out;
+}
+
+.answer-box--expired .selection-handle {
+  opacity: 0;
+}
+
+.answer-box--expired .selection-box {
+  border-color: var(--color-line);
+}
+
+.prompt-text {
+  animation: prompt-wipe 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stamp-preview {
@@ -258,8 +400,6 @@
 
   .stamp-preview:hover .stamp-preview__art {
     transform: translateY(-7px) rotate(-4deg) scale(1.04);
-/* Transform only: fading the whole results page makes the compositor blend a full-screen layer
-   on every frame of the rise. */
     transition-duration: 160ms;
     transition-timing-function: var(--ease-sink);
   }
@@ -295,6 +435,20 @@
   position: absolute;
   inset-block: 3%;
   width: min(160px, calc((100% - 148px) / 2));
+  transition: opacity 400ms ease-out, translate 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Timed question on tablet and phone: the crew steps out to the edges so the prompt and input lead. */
+.canvas-cursors--compact[data-aside] .canvas-cursors__lane {
+  opacity: 0;
+  transition-duration: 240ms;
+}
+
+.canvas-cursors--compact[data-aside] .canvas-cursors__lane--left { translate: -28px 0; }
+.canvas-cursors--compact[data-aside] .canvas-cursors__lane--right { translate: 28px 0; }
+
+.canvas-cursors--compact[data-aside] .canvas-cursors__cursor {
+  animation-play-state: paused;
 }
 
 .canvas-cursors__lane--left {
@@ -435,20 +589,6 @@
   .canvas-cursors--margins .canvas-cursors__lane--left {
     top: 34%;
     left: max(22px, calc((100% - 1280px) / 2 + 22px));
-  transition: opacity 400ms ease-out, translate 400ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Timed question on tablet and phone: the crew steps out to the edges so the prompt and input lead. */
-.canvas-cursors--compact[data-aside] .canvas-cursors__lane {
-  opacity: 0;
-  transition-duration: 240ms;
-}
-
-.canvas-cursors--compact[data-aside] .canvas-cursors__lane--left { translate: -28px 0; }
-.canvas-cursors--compact[data-aside] .canvas-cursors__lane--right { translate: 28px 0; }
-
-.canvas-cursors--compact[data-aside] .canvas-cursors__cursor {
-  animation-play-state: paused;
   }
 
   .canvas-cursors--margins .canvas-cursors__lane--right {
@@ -546,8 +686,46 @@
   100% { transform: none; }
 }
 
+.canvas-player-cursor[data-face-right] .canvas-player-cursor__ready svg,
+.canvas-cursors__cursor[data-face-right] .canvas-cursors__hand svg {
+  scale: -1 1;
+}
+
+/* While the merged palms play, the two cursor hands are part of them. */
+.canvas-player-cursor[data-slapping] .canvas-player-cursor__ready,
+.canvas-cursors__cursor[data-high-five] .canvas-cursors__hand {
+  visibility: hidden;
+}
+
+/* After contact, each hand pops back under its own cursor and stays raised. */
+.canvas-player-cursor[data-hand-return] .canvas-player-cursor__ready,
+.canvas-cursors__cursor[data-hand-return] .canvas-cursors__hand {
+  animation: high-five-return 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.canvas-cursors__cursor[data-hand-lowering] .canvas-cursors__hand {
+  animation: high-five-lower 260ms ease-in forwards;
+}
+
+@keyframes high-five-return {
+  from { opacity: 0.4; transform: scale(1.5); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes high-five-lower {
+  0% { transform: none; }
+  40% { transform: rotate(14deg); }
+  100% { opacity: 0; transform: translateY(6px) rotate(-4deg) scale(0.6); }
+}
+
+/* ---------- High five: contact, after FigJam ----------
+   0–90 ms the palms meet at the midpoint and grow to 2.4×, 90–330 ms they hold with a slight
+   breathe while burst lines and stars fly out, 330–480 ms they shrink back toward each cursor. */
+
 .canvas-high-five {
   color: #5238a2;
+  width: 0;
+  height: 0;
 }
 
 .canvas-high-five__halo {
@@ -709,46 +887,8 @@
 }
 
 .dive-canvas--surface .dive-canvas__tint {
-.canvas-player-cursor[data-face-right] .canvas-player-cursor__ready svg,
-.canvas-cursors__cursor[data-face-right] .canvas-cursors__hand svg {
-  scale: -1 1;
-}
-
-/* While the merged palms play, the two cursor hands are part of them. */
-.canvas-player-cursor[data-slapping] .canvas-player-cursor__ready,
-.canvas-cursors__cursor[data-high-five] .canvas-cursors__hand {
-  visibility: hidden;
-}
-
-/* After contact, each hand pops back under its own cursor and stays raised. */
-.canvas-player-cursor[data-hand-return] .canvas-player-cursor__ready,
-.canvas-cursors__cursor[data-hand-return] .canvas-cursors__hand {
-  animation: high-five-return 200ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.canvas-cursors__cursor[data-hand-lowering] .canvas-cursors__hand {
-  animation: high-five-lower 260ms ease-in forwards;
-}
-
-@keyframes high-five-return {
-  from { opacity: 0.4; transform: scale(1.5); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes high-five-lower {
-  0% { transform: none; }
-  40% { transform: rotate(14deg); }
-  100% { opacity: 0; transform: translateY(6px) rotate(-4deg) scale(0.6); }
-}
-
-/* ---------- High five: contact, after FigJam ----------
-   0–90 ms the palms meet at the midpoint and grow to 2.4×, 90–330 ms they hold with a slight
-   breathe while burst lines and stars fly out, 330–480 ms they shrink back toward each cursor. */
-
   opacity: 0;
   animation: canvas-clear var(--canvas-duration) ease-out;
-  width: 0;
-  height: 0;
 }
 
 .dive-canvas--surface .dive-canvas__guides {
@@ -1056,7 +1196,7 @@
 }
 
 .dive-reveal {
-  animation: reveal-frame 360ms var(--ease-sink);
+  animation: reveal-frame 180ms ease-out;
 }
 
 .dive-figpal-descend {
@@ -1140,5 +1280,28 @@
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Keep the feedback that confirms an action, as a short fade with no movement. */
+  .reveal-verdict,
+  .no-echo-shake {
+    animation: fade-in 150ms ease-out !important;
+  }
+
+  .answer-lift {
+    transform: none;
+  }
+
+  .answer-lift--return,
+  .reveal-verdict__ghost,
+  .stamp-ink,
+  .canvas-high-five__burst,
+  .canvas-high-five__star {
+    display: none;
+  }
+
+  /* High five: a still badge of the two palms instead of the grow and burst. */
+  .canvas-high-five__halo {
+    transform: scale(0.72);
   }
 }

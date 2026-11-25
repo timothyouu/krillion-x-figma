@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react'
-import { FALL_CURVE, sinkDurationMs, waypointTime } from '../features/dive/diveMotion'
+import { useLayoutEffect, useRef, type CSSProperties, type RefObject } from 'react'
+import { FALL_CURVE, peekLift, pickupTravelMs, sinkDurationMs, waypointTime } from '../features/dive/diveMotion'
 import { TIERS, formatDepth } from '../lib/tiers'
 import type { TierKey } from '../lib/types'
 import { FigPalAvatar } from './FigPalAvatar'
@@ -15,6 +15,8 @@ interface TierLadderProps {
 export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
   const index = TIERS.findIndex((entry) => entry.key === tier)
   const duration = sinkDurationMs(tier)
+  const chip = useRef<HTMLDivElement>(null)
+  useCarryFromAnswerBox(chip, tier !== null, duration)
   const motion = {
     '--sink-steps': Math.max(0, index + 1),
     '--sink-duration': duration + 'ms',
@@ -58,15 +60,44 @@ export function TierLadder({ tier, chipText, figpalSlug }: TierLadderProps) {
         })}
       </ol>
       <div className={'tier-answer absolute left-1 top-0.5 w-[38%] lg:w-[33%] ' + (tier ? 'tier-sink' : '')}>
-        <SelectionFrame className="w-fit max-w-full">
-          <span className="flex min-w-0 items-center gap-0.5 bg-paper px-1.5 py-0.5 font-mono text-[13px] leading-[20px] sm:gap-1.5 sm:text-[15px]" title={chipText}>
-            {tier ? <FigPalAvatar slug={figpalSlug} width={20} className="shrink-0" decorative /> : null}
-            <span className="truncate">{chipText}</span>
-          </span>
-        </SelectionFrame>
+        <div ref={chip} className="w-fit max-w-full origin-top-left">
+          <SelectionFrame className="w-fit max-w-full">
+            <span className="flex min-w-0 items-center gap-0.5 bg-paper px-1.5 py-0.5 font-mono text-[13px] leading-[20px] sm:gap-1.5 sm:text-[15px]" title={chipText}>
+              {tier ? <FigPalAvatar slug={figpalSlug} width={20} className="shrink-0" decorative /> : null}
+              <span className="truncate">{chipText}</span>
+            </span>
+          </SelectionFrame>
+        </div>
       </div>
     </div>
   )
+}
+
+/**
+ * The accepted answer was picked up out of the answer box. Carry that object to the surface row
+ * (a FLIP on the chip's inner wrapper) while the outer element starts its fall, so the lift-off
+ * and the drop read as one throw.
+ */
+function useCarryFromAnswerBox(chip: RefObject<HTMLDivElement | null>, active: boolean, sinkMs: number) {
+  useLayoutEffect(() => {
+    const element = chip.current
+    const origin = peekLift()
+    if (!active || !element || !origin || !element.animate) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    const rect = element.getBoundingClientRect()
+    if (!rect.width || !rect.height) return
+    const dx = origin.x - rect.left
+    const dy = origin.y - rect.top
+    const scale = Math.min(1.6, Math.max(0.7, origin.height / rect.height))
+    const animation = element.animate(
+      [
+        { transform: `translate(${dx}px, ${dy}px) rotate(-2deg) scale(${scale})`, filter: 'drop-shadow(0 6px 8px rgb(32 38 52 / 0.18))' },
+        { transform: 'translate(0, 0) rotate(0) scale(1)', filter: 'drop-shadow(0 0 0 rgb(32 38 52 / 0))' },
+      ],
+      { duration: pickupTravelMs(sinkMs), easing: 'cubic-bezier(0.3, 0, 0.2, 1)' },
+    )
+    return () => animation.cancel()
+  }, [chip, active, sinkMs])
 }
 
 /** The connector runs in the space below the landed chip and tier labels. */

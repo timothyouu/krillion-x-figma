@@ -7,6 +7,7 @@ import { diveReducer, initialDiveState, type DiveState } from './diveMachine'
 const TICK_MS = 100
 const FINISH_RETRY_MS = 700
 const FINISH_MAX_TRIES = 6
+const TIMEOUT_BEAT_MS = 360
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -63,7 +64,8 @@ export function useDive(autoStart: boolean): DiveControls {
           }
         }
         if (cancelled) return
-        setCountdownLeft(null)
+        // Stay on the countdown frame at zero while the prompt is fetched, so no other layout flashes in.
+        setCountdownLeft(0)
         const { data, offsetMs } = await startPrompt(slug, state.round)
         if (!cancelled) dispatch({ type: 'prompt_started', prompt: data, offsetMs, nowMs: Date.now() })
       } catch (err) {
@@ -90,10 +92,13 @@ export function useDive(autoStart: boolean): DiveControls {
   useEffect(() => {
     if (state.phase !== 'finishing') return
     let cancelled = false
+    const startedAt = performance.now()
     ;(async () => {
       for (let attempt = 1; attempt <= FINISH_MAX_TRIES; attempt += 1) {
         try {
           const result = await finishPrompt(slug, state.round)
+          // Display only: hold the deselected answer box briefly so the timeout reads as a beat.
+          await wait(Math.max(0, TIMEOUT_BEAT_MS - (performance.now() - startedAt)))
           if (!cancelled) dispatch({ type: 'resolved', result })
           return
         } catch (err) {
@@ -136,8 +141,14 @@ export function useDive(autoStart: boolean): DiveControls {
     [slug],
   )
 
-  const start = useCallback(() => dispatch({ type: 'start' }), [])
-  const descend = useCallback(() => dispatch({ type: 'descend' }), [])
+  const start = useCallback(() => {
+    setCountdownLeft(null)
+    dispatch({ type: 'start' })
+  }, [])
+  const descend = useCallback(() => {
+    setCountdownLeft(null)
+    dispatch({ type: 'descend' })
+  }, [])
   const retry = useCallback(() => dispatch({ type: 'retry' }), [])
 
   return { state, countdownLeft, submit, start, descend, retry }
