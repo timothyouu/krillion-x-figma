@@ -24,7 +24,7 @@ function readAutoStart(state: unknown): boolean {
 export function DiveRoute() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { state, submit, start, descend, retry } = useDive(readAutoStart(location.state))
+  const { state, countdownLeft, submit, start, descend, retry } = useDive(readAutoStart(location.state))
 
   useEffect(() => {
     if (state.phase === 'needs_join') navigate('/', { replace: true })
@@ -42,7 +42,7 @@ export function DiveRoute() {
       <DepthGauge depthM={state.depthM} />
       <main className="relative z-10 mx-auto flex min-h-[min(950px,var(--app-safe-height))] w-full max-w-[882px] flex-col px-4 pb-6 sm:px-6 lg:px-0">
         <Hud state={state} />
-        <DiveBody state={state} submit={submit} start={start} descend={descend} />
+        <DiveBody state={state} countdownLeft={countdownLeft} submit={submit} start={start} descend={descend} />
       </main>
     </>
   )
@@ -71,15 +71,17 @@ function Hud({ state }: { state: DiveState }) {
 
 interface DiveBodyProps {
   state: DiveState
+  countdownLeft: number | null
   submit: (answer: string) => void
   start: () => void
   descend: () => void
 }
 
-function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
+function DiveBody({ state, countdownLeft, submit, start, descend }: DiveBodyProps) {
   const live = state.phase === 'countdown' || state.phase === 'answering' || state.phase === 'checking'
   const clock = useCountdown(state.prompt, live)
   const lastRound = state.round >= state.roundCount
+  const preparing = state.phase === 'starting' && countdownLeft !== null
 
   if (state.phase === 'reveal' && state.reveal) {
     return (
@@ -95,7 +97,7 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
     )
   }
 
-  if (state.phase === 'between' || state.phase === 'starting') {
+  if (state.phase === 'between' || (state.phase === 'starting' && !preparing)) {
     const waiting = state.phase === 'starting'
     return (
       <>
@@ -124,24 +126,31 @@ function DiveBody({ state, submit, start, descend }: DiveBodyProps) {
 
   // countdown, answering, checking, finishing
   const prompt = state.prompt
-  if (!prompt) return null
-  const pending = clock?.phase === 'countdown'
+  if (!prompt && !preparing) return null
+  const pending = preparing || clock?.phase === 'countdown'
+  const seconds = state.phase === 'finishing' ? 0 : (countdownLeft ?? clock?.displaySeconds ?? 0)
   let subline = 'Rarer answers dive deeper'
-  if (pending) subline = `descending · the clock starts in ${clock?.displaySeconds ?? 3}`
+  if (pending) subline = `The clock starts in ${seconds}`
   else if (state.phase === 'checking') subline = 'checking the depths…'
   else if (state.phase === 'finishing') subline = 'time’s up · surfacing…'
 
-  const seconds = state.phase === 'finishing' ? 0 : (clock?.displaySeconds ?? 0)
   const inputEnabled = state.phase === 'answering'
 
   return (
     <>
-      <PromptCard key={prompt.round} round={prompt.round} roundCount={state.roundCount} theme={prompt.theme} text={prompt.text} subline={subline} />
+      <PromptCard
+        key={state.round}
+        round={state.round}
+        roundCount={state.roundCount}
+        theme={pending ? '' : (prompt?.theme ?? '')}
+        text={pending ? 'Descending…' : (prompt?.text ?? '')}
+        subline={subline}
+      />
       <Stage slug={state.figpalSlug} />
       <div className="flex flex-col gap-1">
         <NoEchoMessage input={state.noEcho} attempt={state.attempt} />
         <AnswerInput
-          resetKey={`${prompt.round}-${state.attempt}`}
+          resetKey={`${state.round}-${state.attempt}`}
           disabled={!inputEnabled}
           checking={state.phase === 'checking'}
           seconds={seconds}

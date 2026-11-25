@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { ensureSession, finishPrompt, getMyProgress, startPrompt, submitAnswer } from '../../lib/api'
 import { ApiError, toApiError } from '../../lib/errors'
 import { gameSlug } from '../../lib/supabase'
@@ -14,6 +14,7 @@ function wait(ms: number): Promise<void> {
 
 export interface DiveControls {
   state: DiveState
+  countdownLeft: number | null
   submit: (answer: string) => void
   start: () => void
   descend: () => void
@@ -22,6 +23,7 @@ export interface DiveControls {
 
 /** Drives the dive: loads progress, starts prompts, ticks the clock, submits and finishes. */
 export function useDive(autoStart: boolean): DiveControls {
+  const [countdownLeft, setCountdownLeft] = useState<number | null>(null)
   const [state, dispatch] = useReducer(diveReducer, initialDiveState)
   const slug = gameSlug()
   const stateRef = useRef(state)
@@ -45,12 +47,23 @@ export function useDive(autoStart: boolean): DiveControls {
     }
   }, [state.phase, slug, autoStart])
 
-  // starting: ask the server for this round's prompt (idempotent on the server).
+  // Show the countdown before requesting the prompt and starting the server clock.
   useEffect(() => {
     if (state.phase !== 'starting') return
     let cancelled = false
     ;(async () => {
       try {
+        if (!state.prompt && state.countdownSeconds > 0) {
+          let remaining = state.countdownSeconds * 1000
+          const end = performance.now() + remaining
+          while (!cancelled && remaining > 0) {
+            setCountdownLeft(Math.ceil(remaining / 1000))
+            await wait(Math.min(1000, remaining))
+            remaining = end - performance.now()
+          }
+        }
+        if (cancelled) return
+        setCountdownLeft(null)
         const { data, offsetMs } = await startPrompt(slug, state.round)
         if (!cancelled) dispatch({ type: 'prompt_started', prompt: data, offsetMs, nowMs: Date.now() })
       } catch (err) {
@@ -64,7 +77,7 @@ export function useDive(autoStart: boolean): DiveControls {
     return () => {
       cancelled = true
     }
-  }, [state.phase, state.round, slug])
+  }, [state.phase, state.round, state.countdownSeconds, state.prompt, slug])
 
   // countdown / answering: tick the deadline-driven clock.
   useEffect(() => {
@@ -73,7 +86,7 @@ export function useDive(autoStart: boolean): DiveControls {
     return () => window.clearInterval(id)
   }, [state.phase])
 
-  // finishing: time ran out with nothing accepted. The server allows this from deadline - 1 s.
+  // finishing: time ran out with nothing accepted. The server uses the same deadline as submission.
   useEffect(() => {
     if (state.phase !== 'finishing') return
     let cancelled = false
@@ -115,7 +128,7 @@ export function useDive(autoStart: boolean): DiveControls {
         } catch (err) {
           const code = err instanceof ApiError ? err.code : toApiError(err).code
           if (code === 'time_up') dispatch({ type: 'time_up' })
-          else if (code === 'round_already_resolved') dispatch({ type: 'retry' })
+          else if (code === 'round_already_resolved' || code === 'round_not_open') dispatch({ type: 'retry' })
           else dispatch({ type: 'failed', code })
         }
       })()
@@ -127,5 +140,5 @@ export function useDive(autoStart: boolean): DiveControls {
   const descend = useCallback(() => dispatch({ type: 'descend' }), [])
   const retry = useCallback(() => dispatch({ type: 'retry' }), [])
 
-  return { state, submit, start, descend, retry }
+  return { state, countdownLeft, submit, start, descend, retry }
 }

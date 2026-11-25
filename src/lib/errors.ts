@@ -10,6 +10,7 @@ export const RPC_ERROR_CODES = [
   'round_out_of_order',
   'round_in_progress',
   'round_not_started',
+  'round_not_open',
   'round_already_resolved',
   'time_up',
   'time_not_up',

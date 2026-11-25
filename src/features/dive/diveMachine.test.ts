@@ -104,6 +104,21 @@ describe('diveReducer: loading and resume', () => {
     expect(s.prompt?.deadlineMs).toBe(T0 + 20_000)
   })
 
+  it('requests the prompt again when a preserved pre-migration countdown opens', () => {
+    const hidden = { round: 1, theme: '', text: '', clock_starts_at: iso(T0 + 3000), deadline: iso(T0 + 28_000) }
+    const counting = run(initialDiveState, {
+      type: 'progress_loaded', progress: progress({ active_round: hidden }), offsetMs: 0, nowMs: T0, autoStart: false,
+    })
+    expect(counting.phase).toBe('countdown')
+    const requesting = run(counting, { type: 'tick', nowMs: T0 + 3000 })
+    expect(requesting.phase).toBe('starting')
+    const answering = run(requesting, {
+      type: 'prompt_started', prompt: { ...startResponse(1), text: 'PROMPT_PLACEHOLDER' }, offsetMs: 0, nowMs: T0 + 3000,
+    })
+    expect(answering.phase).toBe('answering')
+    expect(answering.prompt?.deadlineMs).toBe(T0 + 28_000)
+  })
+
   it('goes straight to finishing when a refresh lands after the deadline', () => {
     const active = { round: 1, theme: 'T', text: 'PROMPT_PLACEHOLDER', clock_starts_at: iso(T0 - 30_000), deadline: iso(T0 - 2000) }
     const s = run(initialDiveState, { type: 'progress_loaded', progress: progress({ active_round: active }), offsetMs: 0, nowMs: T0, autoStart: false })

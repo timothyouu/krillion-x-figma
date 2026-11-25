@@ -51,6 +51,7 @@ export interface DiveState {
   phase: DivePhase
   round: number
   roundCount: number
+  countdownSeconds: number
   prompt: DivePrompt | null
   /** The last input that matched nothing; cleared when a new round starts. */
   noEcho: string | null
@@ -84,6 +85,7 @@ export const initialDiveState: DiveState = {
   phase: 'loading',
   round: 1,
   roundCount: 5,
+  countdownSeconds: 0,
   prompt: null,
   noEcho: null,
   attempt: 0,
@@ -119,7 +121,7 @@ function toPrompt(
 function phaseForPrompt(prompt: DivePrompt, nowMs: number): DivePhase {
   const reading = readClock(nowMs, prompt.clockStartsAtMs, prompt.deadlineMs)
   if (reading.phase === 'countdown') return 'countdown'
-  if (reading.phase === 'answering') return 'answering'
+  if (reading.phase === 'answering') return prompt.text ? 'answering' : 'starting'
   return 'finishing'
 }
 
@@ -130,6 +132,7 @@ function onProgress(state: DiveState, event: Extract<DiveEvent, { type: 'progres
     ...state,
     offsetMs,
     roundCount: game.round_count,
+    countdownSeconds: game.countdown_seconds,
     maxScore: game.max_score,
     error: null,
     reveal: null,
