@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FigButton } from '../../components/FigButton'
 import { FigPalAvatar } from '../../components/FigPalAvatar'
@@ -25,6 +25,8 @@ export function HomeRoute() {
   const [name, setName] = useState(() => loadDraft().name)
   const [figpal, setFigpal] = useState(() => loadDraft().figpal ?? DEFAULT_FIGPAL)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const pickerTrigger = useRef<HTMLButtonElement>(null)
+  const returnPickerFocus = useRef(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<ApiErrorCode | 'name_required' | null>(null)
 
@@ -61,6 +63,12 @@ export function HomeRoute() {
 
   const closePicker = useCallback(() => setPickerOpen(false), [])
 
+  useEffect(() => {
+    if (pickerOpen || !returnPickerFocus.current) return
+    returnPickerFocus.current = false
+    pickerTrigger.current?.focus({ preventScroll: true })
+  }, [pickerOpen])
+
   const begin = async (event: FormEvent) => {
     event.preventDefault()
     const displayName = cleanDisplayName(name)
@@ -92,18 +100,18 @@ export function HomeRoute() {
     error === 'name_required' ? 'Type a name first. It shows on the leaderboard.' : error ? describeError(error).body : null
 
   return (
-    <main className="relative mx-auto min-h-dvh w-full max-w-[1280px] overflow-hidden px-4 sm:px-8">
+    <main className="relative mx-auto min-h-[var(--app-safe-height)] w-full max-w-[1280px] overflow-hidden px-4 sm:px-8">
       <HomeStickers pickerOpen={pickerOpen} />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-dvh w-full flex-col items-center py-10 lg:py-0 ${
-          pickerOpen ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_583px] lg:items-center lg:gap-10' : ''
+        className={`relative z-10 mx-auto flex min-h-[var(--app-safe-height)] w-full flex-col items-center py-10 xl:py-0 ${
+          pickerOpen ? 'xl:grid xl:grid-cols-[minmax(0,1fr)_583px] xl:items-center xl:gap-10' : ''
         }`}
       >
-        <div className={`flex w-full flex-col items-center ${pickerOpen ? 'lg:order-1' : ''}`}>
+        <div className={`w-full flex-col items-center ${pickerOpen ? 'hidden xl:order-1 xl:flex' : 'flex'}`}>
           {/* title block (108:10077) */}
           <header
-            className={`flex w-full max-w-[476px] flex-col items-center gap-3 text-center leading-[normal] lg:pt-[118px] ${pickerOpen ? 'lg:hidden' : ''}`}
+            className={`flex w-full max-w-[476px] flex-col items-center gap-3 text-center leading-[normal] xl:pt-[118px] ${pickerOpen ? 'xl:hidden' : ''}`}
           >
             <p className="text-[28px] tracking-[-0.025em] sm:text-[40px]">Figma for Edu</p>
             <h1 className="font-mono text-[48px] leading-[normal] tracking-[0.02em] sm:text-[80px]">FIGILLION</h1>
@@ -112,12 +120,12 @@ export function HomeRoute() {
             </p>
           </header>
 
-          <form onSubmit={begin} className={`flex w-full flex-col items-center ${pickerOpen ? 'lg:pt-[260px]' : ''}`} noValidate>
-            <div className="mt-10 sm:mt-14 lg:mt-[62px]">
+          <form onSubmit={begin} className={`flex w-full flex-col items-center ${pickerOpen ? 'xl:pt-[260px]' : ''}`} noValidate>
+            <div className="mt-5 sm:mt-14 xl:mt-[62px]">
               <FigPalStage slug={figpal} />
             </div>
 
-            <div className="mt-2 flex w-full max-w-[420px] flex-col items-center gap-6 sm:mt-0">
+            <div className="mt-2 flex w-full max-w-[420px] flex-col items-center gap-4 sm:mt-0 sm:gap-6">
               <SelectionFrame className="w-full max-w-[340px]">
                 <label htmlFor="display-name" className="sr-only">
                   Your name
@@ -149,7 +157,7 @@ export function HomeRoute() {
         </div>
 
         {pickerOpen ? (
-          <div className="mt-6 w-full max-w-[583px] lg:order-2 lg:mt-0">
+          <div className="w-full max-w-[583px] xl:order-2">
             <FigPalPicker selected={figpal} onSelect={setFigpal} onClose={closePicker} />
           </div>
         ) : null}
@@ -158,11 +166,15 @@ export function HomeRoute() {
       {!pickerOpen ? (
         <button
           type="button"
-          onClick={() => setPickerOpen(true)}
+          ref={pickerTrigger}
+          onClick={() => {
+            returnPickerFocus.current = true
+            setPickerOpen(true)
+          }}
           aria-label={`Change FigPal (now ${getFigPal(figpal).name})`}
-          className="absolute right-4 top-4 z-20 flex h-[97.68px] w-[81.4px] items-center justify-center rounded-tile border border-select-deep bg-select pb-[5px] transition-transform duration-150 hover:-translate-y-0.5 sm:right-8 lg:left-[1155px] lg:right-auto lg:top-[342px]"
+          className="absolute right-4 top-[238px] z-20 flex h-16 w-16 md:top-4 md:h-[97.68px] md:w-[81.4px] items-center justify-center rounded-tile border border-select-deep bg-select pb-[5px] transition-transform duration-150 hover:-translate-y-0.5 sm:right-8 xl:left-[1155px] xl:right-auto xl:top-[342px]"
         >
-          <FigPalAvatar slug={figpal} width={74} decorative />
+          <FigPalAvatar slug={figpal} width={74} className="max-w-[56px] md:max-w-none" decorative />
           <Nametag className="absolute -bottom-3 left-1/2 -translate-x-1/2 py-[3px]! text-[12px]!">change</Nametag>
         </button>
       ) : null}
@@ -174,7 +186,7 @@ export function HomeRoute() {
 function HomeStickers({ pickerOpen }: { pickerOpen: boolean }) {
   if (pickerOpen) {
     return (
-      <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
+      <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
         <Stamp kind="question" size={70} rotate={-8} className="absolute left-[132px] top-[137px]" />
         <Stamp kind="star" size={84} rotate={6} className="absolute left-[180px] top-[150px]" />
         <Stamp kind="thumbs-up" size={64} rotate={-10} className="absolute left-[72px] top-[238px]" />
@@ -186,12 +198,12 @@ function HomeStickers({ pickerOpen }: { pickerOpen: boolean }) {
   }
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 hidden md:block">
-      <Stamp kind="question" size={88} rotate={-10} className="absolute left-[7%] top-[104px] lg:left-[258px] lg:top-[110px]" />
-      <Stamp kind="star" size={84} rotate={8} className="absolute left-[2%] top-[176px] lg:left-[333px] lg:top-[180px]" />
-      <Stamp kind="plus-one" size={66} rotate={-6} className="absolute left-[9%] top-[233px] lg:left-[138px] lg:top-[218px]" />
-      <Stamp kind="heart" size={88} rotate={14} className="absolute right-[6%] top-[128px] lg:left-[858px] lg:right-auto lg:top-[118px]" />
-      <Stamp kind="thumbs-up" size={78} rotate={-8} className="absolute right-[5%] top-[221px] lg:left-[970px] lg:right-auto lg:top-[198px]" />
-      <Stamp kind="dot" size={74} rotate={0} className="absolute right-[1%] top-[176px] lg:left-[1080px] lg:right-auto lg:top-[160px]" />
+      <Stamp kind="question" size={88} rotate={-10} className="absolute left-[7%] top-[104px] xl:left-[258px] xl:top-[110px]" />
+      <Stamp kind="star" size={84} rotate={8} className="absolute left-[2%] top-[176px] xl:left-[333px] xl:top-[180px]" />
+      <Stamp kind="plus-one" size={66} rotate={-6} className="absolute left-[9%] top-[233px] xl:left-[138px] xl:top-[218px]" />
+      <Stamp kind="heart" size={88} rotate={14} className="absolute right-[6%] top-[128px] xl:left-[858px] xl:right-auto xl:top-[118px]" />
+      <Stamp kind="thumbs-up" size={78} rotate={-8} className="absolute right-[5%] top-[221px] xl:left-[970px] xl:right-auto xl:top-[198px]" />
+      <Stamp kind="dot" size={74} rotate={0} className="absolute right-[1%] top-[176px] xl:left-[1080px] xl:right-auto xl:top-[160px]" />
     </div>
   )
 }
