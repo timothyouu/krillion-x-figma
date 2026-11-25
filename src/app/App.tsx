@@ -6,10 +6,11 @@ import { ConfigErrorScreen } from './ConfigErrorScreen'
 import { ClosedRoute } from './routes/ClosedRoute'
 import { DiveRoute } from './routes/DiveRoute'
 import { HomeRoute } from './routes/HomeRoute'
+import { loadLeaderboardRoute, loadResultsRoute } from './routes/lazyRoutes'
 
 // Played after the dive (results) or on the host's screen (leaderboard): load on demand.
-const ResultsRoute = lazy(() => import('./routes/ResultsRoute').then((m) => ({ default: m.ResultsRoute })))
-const LeaderboardRoute = lazy(() => import('./routes/LeaderboardRoute').then((m) => ({ default: m.LeaderboardRoute })))
+const ResultsRoute = lazy(() => loadResultsRoute().then((m) => ({ default: m.ResultsRoute })))
+const LeaderboardRoute = lazy(() => loadLeaderboardRoute().then((m) => ({ default: m.LeaderboardRoute })))
 
 function NotFound() {
   return (

@@ -193,8 +193,8 @@
 }
 
 @keyframes results-rise {
-  from { opacity: 0.88; transform: translateY(66px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(66px); }
+  to { transform: translateY(0); }
 }
 
 @keyframes no-echo-shake {
@@ -258,6 +258,8 @@
 
   .stamp-preview:hover .stamp-preview__art {
     transform: translateY(-7px) rotate(-4deg) scale(1.04);
+/* Transform only: fading the whole results page makes the compositor blend a full-screen layer
+   on every frame of the rise. */
     transition-duration: 160ms;
     transition-timing-function: var(--ease-sink);
   }
