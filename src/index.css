@@ -678,8 +678,114 @@
   animation-direction: reverse;
 }
 
-.dive-depth-ruler {
+.dive-depth-gauge {
+  --depth-guide-y: min(30dvh, 285px);
+  position: fixed;
+  inset-block: 0;
+  right: max(43px, calc((100vw - 1280px) / 2 + 43px));
+  z-index: 0;
+  display: none;
+  width: 29px;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+@media (min-width: 1280px) {
+  .dive-depth-gauge { display: block; }
+}
+
+.dive-depth-gauge__strip {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  border-inline: 1px solid #d1d5d9;
+  background: #fdfdfd;
+}
+
+.dive-depth-gauge__range {
+  position: absolute;
+  top: calc(var(--depth-guide-y) - var(--ruler-length));
+  inset-inline: 0;
+  height: var(--ruler-length);
+  background: #e2f3ff;
+  transform: scaleY(var(--ruler-depth));
+  transform-origin: bottom;
+}
+
+.dive-depth-ruler,
+.dive-depth-gauge__range {
   transition: transform var(--ruler-duration) var(--fall-curve);
+}
+
+.dive-depth-ruler {
+  position: absolute;
+  top: var(--depth-guide-y);
+  inset-inline: 0;
+  transform: translateY(var(--ruler-offset));
+}
+
+.dive-depth-gauge__mark {
+  position: absolute;
+  inset-inline: 0;
+}
+
+.dive-depth-gauge__tick {
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 1px;
+  background: #9da5ad;
+}
+
+.dive-depth-gauge__tick[data-size='medium'] { width: 7px; }
+.dive-depth-gauge__tick[data-size='major'] { width: 10px; background: #697680; }
+
+.dive-depth-gauge__number {
+  position: absolute;
+  top: 0;
+  right: 3px;
+  color: #4d5b65;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.dive-depth-gauge__guide {
+  position: absolute;
+  top: var(--depth-guide-y);
+  right: 17px;
+  left: -30px;
+  height: 1px;
+  background: var(--color-select);
+}
+
+.dive-depth-gauge__guide::after {
+  position: absolute;
+  left: 30px;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--color-select);
+  background: var(--color-paper);
+  content: '';
+}
+
+.dive-depth-gauge__readout {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: max-content;
+  padding: 2px 5px;
+  border: 1px solid #9acbec;
+  border-radius: 3px;
+  background: #eef8ff;
+  color: var(--color-select-deep);
+  transform: translateY(-50%);
+}
+
+.dive-depth-gauge__readout span {
+  margin-left: 3px;
 }
 
 .tier-track {
@@ -933,7 +1039,7 @@
 }
 
 @supports not (animation-timing-function: linear(0, 1)) {
-  .dive-canvas__grid, .dive-depth-ruler {
+  .dive-canvas__grid, .dive-depth-ruler, .dive-depth-gauge__range {
     transition-timing-function: var(--ease-sink);
   }
 

@@ -60,7 +60,7 @@ Oscar uses Figma Sans VF and Figma Mono VF, which are not licensed for the web. 
 - **Selection frame** → `SelectionFrame`: 2 px `select` border with four 8 px square handles. Marks the one active thing: the answer box, the name box, the chosen FigPal, your row in the Catch, your row on the leaderboard.
 - **Timer** (108:12992) → `Timer`: white pill, seven-segment digits. Blue during the 3 s countdown, orange in the last 5 s.
 - **Answer box + progress** (108:11973, 108:11975) → `AnswerInput`.
-- **Milestones + marker** (116:2482, 106:9000) → `DepthGauge`: tick every 22 px (100 m), medium every 5, labelled every 10 (1,000 m). The ruler slides up as you sink; YOU stays put.
+- **Milestones + marker** (116:2482, 106:9000) → `DepthGauge`: tick every 22 px (100 m), medium every 5, labelled every 10 (1,000 m). The right-hand ruler sits in a light strip. It slides up as you sink, while a blue selection range runs from the surface to the fixed YOU depth guide.
 - **charaSelect + figpal** (83:12724, 83:5336) → `FigPalPicker`: 5-up grid, selected = selection frame + blue name chip, hover = frame only.
 - **Stamps** → `Stamp`: tier stamps and decoration. Decorative stamps are `aria-hidden`.
 
