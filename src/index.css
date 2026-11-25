@@ -1,0 +1,192 @@
+@import 'tailwindcss';
+
+/* Tokens: Oscar's Figillion frames (Figma file QLmoeEgdhjwgqjQhcbopeq, section "oscar")
+   plus the Figma for Edu Brand Book. See DESIGN.md. */
+@theme {
+  --font-sans: 'Geist', 'Figma Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Figma Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --color-ink: #000000;
+  --color-ink-strong: #161616;
+  --color-ink-soft: #3f3f3f;
+  --color-mute: #7b7b7b;
+  --color-line: #e5e5e5;
+  --color-canvas: #f5f5f5;
+  --color-paper: #ffffff;
+
+  /* Figma's selection blue: the one interactive accent. */
+  --color-select: #009cff;
+  --color-select-deep: #00609c;
+  --color-select-ice: #e6f6ff;
+
+  /* Tier colors, sampled from each tier's stamp. */
+  --color-tier-common: #ffa5dc;
+  --color-tier-too-clever: #f24e1e;
+  --color-tier-uncommon: #14ae5c;
+  --color-tier-rare: #ff7262;
+  --color-tier-deep-cut: #9747ff;
+  --color-tier-figlion: #ffc700;
+  --color-no-echo: #0d99ff;
+
+  --radius-tag: 5px;
+  --radius-button: 8px;
+  --radius-tile: 20px;
+
+  --ease-sink: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    overflow-x: clip;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background-color: var(--color-canvas);
+    /* Oscar's canvas grid, rendered at the frame's scale (2048 px tile into a 1280 px frame). */
+    background-image: url('./assets/brand/grid-bg.png');
+    background-size: 1280px 1280px;
+    background-position: center top;
+    -webkit-font-smoothing: antialiased;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-select-ice);
+    color: var(--color-ink);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-select);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-select);
+    outline-offset: 3px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-mute) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-mute);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes figpal-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes stamp-press {
+  0% {
+    transform: scale(1.6) rotate(var(--stamp-rotate, 0deg));
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.92) rotate(var(--stamp-rotate, 0deg));
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(var(--stamp-rotate, 0deg));
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.animate-bob {
+  animation: figpal-bob 3.2s ease-in-out infinite;
+}
+
+.animate-stamp {
+  animation: stamp-press 420ms var(--ease-out-expo) both;
+}
+
+.animate-rise {
+  animation: rise-in 360ms var(--ease-out-expo) both;
+}
+
+.animate-live {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-bob,
+  .animate-live {
+    animation: none !important;
+  }
+}
