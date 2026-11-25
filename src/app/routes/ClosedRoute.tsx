@@ -43,7 +43,7 @@ export function ClosedRoute() {
     }
   }, [navigate, nonce])
 
-  if (load.status === 'loading') return <LoadingScreen label="checking the tide" />
+  if (load.status === 'loading') return <LoadingScreen label="checking the board" />
   if (load.status === 'error') return <ErrorScreen code={load.code} onRetry={() => setNonce((n) => n + 1)} />
 
   const { game } = load
@@ -70,8 +70,8 @@ export function ClosedRoute() {
   }
   return (
     <StatusPanel
-      tag="Dive closed"
-      title="The trench is closed."
+      tag="Board closed"
+      title="This board is closed."
       body={
         <p>
           {game.title} closed <span className="font-mono text-ink">{formatOpening(game.closes_at)}</span>. The final board

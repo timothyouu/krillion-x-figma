@@ -92,7 +92,7 @@ export function HomeRoute() {
     }
   }
 
-  if (boot.status === 'loading') return <LoadingScreen label="surfacing" />
+  if (boot.status === 'loading') return <LoadingScreen label="opening the board" />
 
   const resuming = Boolean(boot.player && boot.player.rounds_resolved > 0)
   const roundCount = boot.game?.round_count ?? 5
@@ -119,7 +119,7 @@ export function HomeRoute() {
             <p className="text-[28px] tracking-[-0.025em] sm:text-[40px]">Figma for Edu</p>
             <h1 className="font-mono text-[48px] leading-[normal] tracking-[0.02em] sm:text-[80px]">FIGILLION</h1>
             <p className="text-[16px] text-[#3f3f3f] sm:whitespace-nowrap sm:text-[20px]">
-              {roundCount} Prompts · {seconds} Seconds · Rarer Answers Dive Deeper
+              {roundCount} Prompts · {seconds} Seconds · Rarer Answers Pan Deeper
             </p>
           </header>
 
@@ -174,7 +174,7 @@ export function HomeRoute() {
               </SelectionFrame>
 
               <FigButton type="submit" icon="down" disabled={busy}>
-                {busy ? 'Descending' : resuming ? 'Continue descent' : 'Begin descent'}
+                {busy ? 'Panning' : resuming ? 'Keep panning' : 'Start panning'}
               </FigButton>
 
               <p id="home-error" role="alert" className="min-h-6 max-w-[420px] text-center text-[15px] text-[#c2410c]">

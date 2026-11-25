@@ -17,7 +17,7 @@ function NotFound() {
     <StatusPanel
       tag="404"
       title="Lost at sea."
-      body={<p>There is nothing at this depth.</p>}
+      body={<p>There is nothing on this part of the board.</p>}
       figpal="duck"
       stamp="question"
       actions={

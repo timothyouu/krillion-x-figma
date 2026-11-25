@@ -32,11 +32,11 @@ export function LeaderboardRow({ row, roundCount, isMe }: LeaderboardRowProps) {
         <span className="truncate text-[18px] sm:text-[24px]">{row.display_name}</span>
         <span className="flex items-center gap-2 font-mono text-[12px] uppercase">
           {row.finished ? (
-            <span className="text-ink-soft">surfaced</span>
+            <span className="text-ink-soft">zoomed out</span>
           ) : (
             <span className="flex items-center gap-1.5 text-select">
               <span className="size-1.5 rounded-full bg-select animate-live" aria-hidden />
-              diving {row.rounds_done}/{roundCount}
+              panning {row.rounds_done}/{roundCount}
             </span>
           )}
         </span>

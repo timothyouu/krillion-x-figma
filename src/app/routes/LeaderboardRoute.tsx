@@ -18,7 +18,7 @@ export function LeaderboardRoute() {
   // get_leaderboard's "me" has no name; match it to the name this device joined with.
   const [myName] = useState(() => loadDraft().name)
 
-  if (!data && !error) return <LoadingScreen label="counting divers" />
+  if (!data && !error) return <LoadingScreen label="counting players" />
 
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-10">
@@ -29,7 +29,7 @@ export function LeaderboardRoute() {
             <Link to="/" className="font-mono text-[40px] leading-none tracking-[0.02em] sm:text-[56px]">
               FIGILLION
             </Link>
-            <p className="mt-2 text-[20px] text-ink-soft sm:text-[24px]">Deepest divers, live</p>
+            <p className="mt-2 text-[20px] text-ink-soft sm:text-[24px]">Deepest on the board, live</p>
           </div>
         </div>
         {data ? <Counts data={data} /> : null}
@@ -44,7 +44,7 @@ export function LeaderboardRoute() {
       {data && data.rows.length === 0 ? (
         <section className="flex flex-col items-center gap-6 py-16 text-center">
           <FigPalStage slug="rock" width={120} glow={false} />
-          <p className="font-mono text-[28px] sm:text-[36px]">Nobody has dived yet.</p>
+          <p className="font-mono text-[28px] sm:text-[36px]">Nobody has panned yet.</p>
           <p className="text-[18px] text-ink-soft">Open the game link and be the first name on the board.</p>
         </section>
       ) : null}
@@ -110,9 +110,9 @@ function RankedRows({ rows, me, myName }: Pick<LeaderboardResponse, 'rows' | 'me
 function Counts({ data }: { data: LeaderboardResponse }) {
   return (
     <dl className="flex flex-wrap gap-2" aria-live="polite">
-      <Count label="divers" value={data.total_players} />
-      <Count label="surfaced" value={data.finished} />
-      <Count label="still diving" value={data.diving} live />
+      <Count label="players" value={data.total_players} />
+      <Count label="zoomed out" value={data.finished} />
+      <Count label="still panning" value={data.diving} live />
     </dl>
   )
 }

@@ -21,12 +21,12 @@ describe('buildDescentBoard', () => {
   it('says nothing landed after a timeout, and opens the first dive without a catch', () => {
     const timedOut = board({ previous: { round: 1, theme: '', answer: null, tier: null } })
     expect(texts(timedOut.near)).toContain('nothing landed')
-    expect(texts(board({ round: 1 }).near)).toContain('First dive')
+    expect(texts(board({ round: 1 }).near)).toContain('First pan')
   })
 
   it('puts progress and depth on the far group', () => {
     const { far } = board({ round: 3, depthM: 850 })
-    expect(texts(far)).toEqual(expect.arrayContaining(['Prompt 3 of 5', '-850 m']))
+    expect(texts(far)).toEqual(expect.arrayContaining(['Prompt 3 of 5', '850 px']))
   })
 
   it('signs comments with the crew whose cursors roam the canvas', () => {

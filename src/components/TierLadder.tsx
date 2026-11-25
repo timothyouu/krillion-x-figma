@@ -30,7 +30,7 @@ export function TierLadder({ tier, chipText, typedText = null, figpalSlug }: Tie
   return (
     <div className="tier-track relative select-none" style={motion}>
       <div className="tier-row flex items-center justify-end border-b border-dashed border-line px-2">
-        <span className="font-mono text-[11px] text-mute">surface · 0 m</span>
+        <span className="font-mono text-[11px] text-mute">start · 0 px</span>
       </div>
       {tier ? <div className="tier-travel-line" aria-hidden="true" /> : null}
       <ol aria-hidden="true">

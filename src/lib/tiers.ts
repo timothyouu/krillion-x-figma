@@ -29,7 +29,7 @@ export const TIERS: readonly TierInfo[] = [
   { key: 'figlion', label: 'Figlion', word: 'figlion', points: 100, description: 'One in a Figillion.', color: '#ffc700', stamp: starStamp },
 ] as const
 
-export const NO_ECHO = { word: 'no echo', color: '#0d99ff', stamp: thumbsDownStamp } as const
+export const NO_ECHO = { word: 'not on the board', color: '#0d99ff', stamp: thumbsDownStamp } as const
 
 const BY_KEY: ReadonlyMap<TierKey, TierInfo> = new Map(TIERS.map((t) => [t.key, t]))
 
@@ -45,16 +45,17 @@ export function getTier(key: TierKey): TierInfo {
 
 export const METRES_PER_POINT = 10
 
-/** Every point sinks you 10 metres. */
+/**
+ * Every point pans you 10 px further down the FigJam board. The server still calls this
+ * `depth_m`; players see it as canvas pixels.
+ */
 export function depthFromPoints(points: number): number {
   return Math.max(0, points) * METRES_PER_POINT
 }
 
-/** "-2,350 m" (0 shows as "0 m"). */
-export function formatDepth(metres: number): string {
-  const rounded = Math.round(metres)
-  if (rounded === 0) return '0 m'
-  return `-${rounded.toLocaleString('en-US')} m`
+/** "2,350 px" (0 shows as "0 px"). */
+export function formatDepth(pixels: number): string {
+  return `${Math.max(0, Math.round(pixels)).toLocaleString('en-US')} px`
 }
 
 export interface RankTitle {
@@ -64,13 +65,13 @@ export interface RankTitle {
 }
 
 const RANK_BANDS: readonly { max: number; title: RankTitle }[] = [
-  { max: 100, title: { tier: 'common', title: 'Common.', line: 'Plenty of ocean left.' } },
-  { max: 180, title: { tier: 'uncommon', title: 'Uncommon.', line: 'Swimming with the school.' } },
-  { max: 250, title: { tier: 'rare', title: 'Rare.', line: 'Below the thermocline.' } },
-  { max: 320, title: { tier: 'deep_cut', title: 'Deep Cut.', line: 'Seriously deep dive.' } },
+  { max: 100, title: { tier: 'common', title: 'Common.', line: 'Plenty of board left.' } },
+  { max: 180, title: { tier: 'uncommon', title: 'Uncommon.', line: 'Panning with the crowd.' } },
+  { max: 250, title: { tier: 'rare', title: 'Rare.', line: 'Off the visible canvas.' } },
+  { max: 320, title: { tier: 'deep_cut', title: 'Deep Cut.', line: 'Seriously deep pan.' } },
 ]
 
-const TRENCH: RankTitle = { tier: 'figlion', title: 'Figlion.', line: 'Trench dweller.' }
+const TRENCH: RankTitle = { tier: 'figlion', title: 'Figlion.', line: 'Edge of the infinite canvas.' }
 
 /** The Bearing: rank title by score band (specs.md 3.1). */
 export function rankTitle(score: number): RankTitle {

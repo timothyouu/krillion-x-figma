@@ -58,7 +58,7 @@ const FAR_ORDERS = [
   [1, 0, 2],
 ] as const
 
-const FIRST_DIVE = ['Good luck!', 'Dive in', 'You got this']
+const FIRST_DIVE = ['Good luck!', 'Pan away', 'You got this']
 const AFTER_TIMEOUT = ['Next one’s yours', 'Shake it off', 'So close']
 const AFTER_SAFE = ['Classic pick', 'Safe landing', 'Same as mine']
 const AFTER_GOOD = ['Nice find', 'Ooh, good one', 'Didn’t think of that']
@@ -101,7 +101,7 @@ function reactionLines(previous: PreviousRound | null): readonly string[] {
 }
 
 function catchSticky({ previous, roundCount }: DescentBoardInput): BoardItem {
-  if (!previous) return { kind: 'sticky', text: 'First dive', note: `${roundCount} prompts`, tone: 'yellow' }
+  if (!previous) return { kind: 'sticky', text: 'First pan', note: `${roundCount} prompts`, tone: 'yellow' }
   const note = previous.theme || `Prompt ${previous.round}`
   if (!previous.answer || !previous.tier) return { kind: 'sticky', text: 'nothing landed', note, tone: 'blue' }
   return { kind: 'sticky', text: previous.answer, note, tone: TONE_BY_TIER[previous.tier] }

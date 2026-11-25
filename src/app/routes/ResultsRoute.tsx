@@ -37,7 +37,7 @@ export function ResultsRoute() {
     else if (results.code === 'not_joined') navigate('/', { replace: true })
   }, [results, navigate])
 
-  if (results.status === 'loading') return <LoadingScreen label="surfacing" />
+  if (results.status === 'loading') return <LoadingScreen label="zooming out" />
   if (results.status === 'error') {
     if (results.code === 'not_finished' || results.code === 'not_joined') return <LoadingScreen />
     return <ErrorScreen code={results.code} onRetry={reload} />
@@ -67,7 +67,7 @@ function ResultsView({ data, surfacing }: { data: ResultsResponse; surfacing: bo
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          <Card tag="Surfaced">
+          <Card tag="Zoomed out">
             <div className="flex flex-col gap-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -105,17 +105,17 @@ function ResultsView({ data, surfacing }: { data: ResultsResponse; surfacing: bo
             </div>
           </Card>
 
-          <Card tag="Everyone’s dive">
+          <Card tag="Everyone’s pan">
             <div className="flex h-full flex-col justify-between gap-4">
               <p className="text-[17px] text-ink-soft">
-                {data.finished_count} {data.finished_count === 1 ? 'diver has' : 'divers have'} surfaced. You are the blue bar.
+                {data.finished_count} {data.finished_count === 1 ? 'player has' : 'players have'} zoomed out. You are the blue bar.
               </p>
               <ScoreCurve histogram={data.histogram} score={player.score} maxScore={data.max_score} />
             </div>
           </Card>
         </div>
 
-        <Card tag="Dive log">
+        <Card tag="Pan log">
           <DiveLog rounds={data.rounds} />
         </Card>
 
@@ -150,12 +150,12 @@ function CopyResultButton({ data }: { data: ResultsResponse }) {
 function CatchSection({ data }: { data: ResultsResponse }) {
   const { state, reload } = useCatch()
   return (
-    <Card tag="The Catch">
-      <p className="mb-4 text-[17px] text-ink-soft">Every answer that echoed, deepest first.</p>
-      {state.status === 'loading' ? <p className="font-mono text-[15px] text-mute">hauling in the net…</p> : null}
+    <Card tag="The Board">
+      <p className="mb-4 text-[17px] text-ink-soft">Every answer on the board, deepest first.</p>
+      {state.status === 'loading' ? <p className="font-mono text-[15px] text-mute">gathering the stickies…</p> : null}
       {state.status === 'error' ? (
         <div className="flex items-center gap-4">
-          <p className="text-[16px] text-ink-soft">The Catch did not load.</p>
+          <p className="text-[16px] text-ink-soft">The board did not load.</p>
           <FigButton variant="quiet" onClick={reload}>
             Retry
           </FigButton>

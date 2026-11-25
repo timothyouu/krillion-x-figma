@@ -59,15 +59,15 @@ export function toApiError(err: unknown): ApiError {
 export function describeError(code: ApiErrorCode): { title: string; body: string } {
   switch (code) {
     case 'game_not_open':
-      return { title: 'The dive is closed', body: 'This game is not open right now. Check the time with your host.' }
+      return { title: 'The board is closed', body: 'This game is not open right now. Check the time with your host.' }
     case 'game_not_found':
       return { title: 'No such game', body: 'This link points at a game that does not exist. Ask your host for the right link.' }
     case 'invalid_display_name':
       return { title: 'Check your name', body: 'Names need 1 to 24 characters.' }
     case 'invalid_figpal':
-      return { title: 'Pick a FigPal', body: 'Choose one of the FigPals before you dive.' }
+      return { title: 'Pick a FigPal', body: 'Choose one of the FigPals before you start panning.' }
     case 'not_joined':
-      return { title: 'You have not joined yet', body: 'Head back to the start, pick a name and a FigPal, then dive.' }
+      return { title: 'You have not joined yet', body: 'Head back to the start, pick a name and a FigPal, then start panning.' }
     case 'not_signed_in':
     case 'auth_failed':
       return { title: 'Could not start a session', body: 'Your browser could not sign in. Refresh the page; if it keeps failing, try another browser.' }

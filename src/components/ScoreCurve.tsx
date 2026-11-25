@@ -29,7 +29,7 @@ export function ScoreCurve({ histogram, score, maxScore }: ScoreCurveProps) {
           <span className="h-[14px] w-[2px] bg-select" />
         </div>
         <div className="flex items-end gap-[3px] border-b-2 border-mute" style={{ height: HEIGHT }} role="img"
-          aria-label={`Score distribution of ${total} finished divers; you scored ${score} of ${maxScore}`}>
+          aria-label={`Score distribution of ${total} finished players; you scored ${score} of ${maxScore}`}>
           {histogram.map((bucket, i) => {
             const h = bucket.count === 0 ? 2 : Math.max(6, (bucket.count / peak) * (HEIGHT - 8))
             return (

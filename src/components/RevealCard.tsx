@@ -32,7 +32,7 @@ export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy
   const landMs = tier && !reducedMotion ? sinkDurationMs(reveal.tier) : 0
   const typedDifferently = landed && reveal.yourInput && normalize(reveal.yourInput) !== normalize(reveal.answer)
   const heavy = tier !== null && tier.points >= 85
-  const announcement = tier ? `Landed ${tier.word}. ${reveal.points} points, sink ${formatDepth(reveal.depthM).replace('-', '')}.` : 'Nothing landed. The clock beat you to it.'
+  const announcement = tier ? `Landed ${tier.word}. ${reveal.points} points, pan ${formatDepth(reveal.depthM)}.` : 'Nothing landed. The clock beat you to it.'
   const announced = useLandingAnnouncement(announcement, landMs)
 
   const verdictMotion = {
@@ -46,7 +46,7 @@ export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy
     <section className="dive-reveal flex w-full flex-col gap-[5px]" aria-labelledby="reveal-title">
       <Nametag>
         Prompt {reveal.round} of {roundCount}
-        <span className="font-normal text-ink-soft">&nbsp;·&nbsp;{landed ? 'landed' : 'surfaced empty'}</span>
+        <span className="font-normal text-ink-soft">&nbsp;·&nbsp;{landed ? 'landed' : 'nothing landed'}</span>
       </Nametag>
       <div
         className={'grid w-full gap-5 border border-line bg-paper px-4 py-5 sm:px-10 sm:py-9 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:gap-8 lg:px-14 ' + (heavy ? 'reveal-thud' : '')}
@@ -93,7 +93,7 @@ export function RevealCard({ reveal, roundCount, promptText, figpalSlug = 'figgy
           ) : null}
           <p className="reveal-line font-mono text-[18px] uppercase sm:text-[20px]" style={lineDelay(2)}>
             +{reveal.points} pts
-            <span className="text-ink-soft"> · {tier ? `sink ${formatDepth(reveal.depthM).replace('-', '')}` : 'the clock beat you to it.'}</span>
+            <span className="text-ink-soft"> · {tier ? `pan ${formatDepth(reveal.depthM)}` : 'the clock beat you to it.'}</span>
           </p>
           {tier ? (
             <p className="reveal-line text-[18px] text-ink-soft sm:text-[20px]" style={lineDelay(2)}>

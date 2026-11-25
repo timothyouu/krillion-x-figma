@@ -9,10 +9,10 @@ export function bucketIndexFor(histogram: readonly HistogramBucket[], score: num
   return score < (histogram[0]?.from ?? 0) ? 0 : histogram.length - 1
 }
 
-/** "better than 82% of divers", or a first-diver line when nobody else has finished. */
+/** "Deeper than 82% of players", or a first-player line when nobody else has finished. */
 export function percentileLine(betterThanPct: number, finishedCount: number): string {
-  if (finishedCount <= 1) return 'First diver to surface. The curve fills in as others finish.'
-  return `Deeper than ${betterThanPct}% of divers`
+  if (finishedCount <= 1) return 'First to zoom out. The curve fills in as others finish.'
+  return `Deeper than ${betterThanPct}% of players`
 }
 
 /** Plain-text summary for "Copy result". */

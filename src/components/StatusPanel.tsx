@@ -32,7 +32,7 @@ export function StatusPanel({ tag, title, body, stamp, figpal, actions }: Status
   )
 }
 
-export function LoadingScreen({ label = 'descending' }: { label?: string }) {
+export function LoadingScreen({ label = 'panning' }: { label?: string }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6" aria-busy="true">
       <FigPalStage slug="figgy" width={112} glow={false} />

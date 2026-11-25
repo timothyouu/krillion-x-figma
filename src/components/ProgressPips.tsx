@@ -17,7 +17,7 @@ function pipLabel(pip: PipState, index: number): string {
 /** One pip per prompt, filled with the tier color it landed in. */
 export function ProgressPips({ pips, current }: ProgressPipsProps) {
   return (
-    <ol className="flex items-center gap-1.5" aria-label="Dive progress">
+    <ol className="flex items-center gap-1.5" aria-label="Pan progress">
       {pips.map((pip, i) => {
         const isCurrent = i + 1 === current && pip === 'pending'
         let fill = 'transparent'

@@ -17,11 +17,11 @@ const landed: RevealData = {
 }
 
 describe('RevealCard', () => {
-  it('shows the tier word, points, sink depth and the typo the server forgave', () => {
+  it('shows the tier word, points, pan distance and the typo the server forgave', () => {
     render(<RevealCard reveal={landed} roundCount={5} promptText="PROMPT_PLACEHOLDER" />)
     expect(screen.getByRole('heading', { name: 'deep cut' })).toBeInTheDocument()
     expect(screen.getByText(/\+85 pts/i)).toBeInTheDocument()
-    expect(screen.getByText(/sink 850 m/)).toBeInTheDocument()
+    expect(screen.getByText(/pan 850 px/)).toBeInTheDocument()
     expect(screen.getByText('Seriously deep in the docs.')).toBeInTheDocument()
     expect(screen.getByText(/Autocorrected from/)).toHaveTextContent('answr_placeholder')
   })

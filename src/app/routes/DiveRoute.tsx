@@ -149,7 +149,7 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
         <Stage reaction={reaction} slug={sinkTime ? state.figpalSlug : undefined} sinkTime={sinkTime} sinkDepth={state.reveal.depthM} />
         <nav className="flex justify-center pt-2">
           <FigButton icon={lastRound ? 'up' : 'down'} onClick={descend} ref={focusAdvance}>
-            {lastRound ? 'Surface' : 'Descend'}
+            {lastRound ? 'Zoom to fit' : 'Pan deeper'}
           </FigButton>
         </nav>
       </>
@@ -165,13 +165,13 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
           </Nametag>
           <div className="flex min-h-[220px] flex-col justify-center gap-4 border border-line bg-paper px-6 py-10 sm:px-16">
             <p className="font-mono text-[32px] font-medium leading-[1.15] sm:text-[44px]">Next prompt is waiting.</p>
-            <p className="text-[18px] text-ink-soft sm:text-[20px]">The clock starts 3 seconds after you descend.</p>
+            <p className="text-[18px] text-ink-soft sm:text-[20px]">The clock starts 3 seconds after you pan.</p>
           </div>
         </section>
         <Stage slug={state.figpalSlug} />
         <nav className="flex justify-center pt-2">
           <FigButton icon="down" onClick={start} ref={focusAdvance}>
-            Descend
+            Pan deeper
           </FigButton>
         </nav>
       </>
@@ -187,12 +187,12 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
   if (state.phase === 'finishing') seconds = 0
   else if (starting && countdownLeft !== null) seconds = countdownLeft
   else if (starting && !prompt) seconds = state.countdownSeconds
-  let subline = 'Rarer answers dive deeper'
+  let subline = 'Rarer answers pan deeper'
   // Resuming after a refresh: the server clock is already running, so there is no countdown to show.
   const resuming = starting && prompt !== null && countdownLeft === null
   if (pending) subline = seconds > 0 && !resuming ? `The clock starts in ${seconds}` : 'Here it comes'
-  else if (state.phase === 'checking') subline = 'checking the depths…'
-  else if (state.phase === 'finishing') subline = 'time’s up · surfacing…'
+  else if (state.phase === 'checking') subline = 'checking the board…'
+  else if (state.phase === 'finishing') subline = 'time’s up · zooming out…'
 
   const inputEnabled = state.phase === 'answering'
 
@@ -204,7 +204,7 @@ function DiveBody({ state, countdownLeft, sinkTime, reaction, submit, start, des
         roundCount={state.roundCount}
         theme={pending ? '' : (prompt?.theme ?? '')}
         descending={pending && !resuming && state.countdownSeconds > 0}
-        text={pending ? 'Descending…' : (prompt?.text ?? '')}
+        text={pending ? 'Panning…' : (prompt?.text ?? '')}
         subline={subline}
       />
       <Stage slug={state.figpalSlug} descending={pending} reaction={reaction} aside={!pending} />
