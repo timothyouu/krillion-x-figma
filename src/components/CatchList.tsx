@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { getTier, isTierKey } from '../lib/tiers'
 import type { CatchRound, ResultsRound } from '../lib/types'
 import { Nametag } from './Nametag'
@@ -13,6 +13,13 @@ interface CatchListProps {
 /** The Catch: one row per prompt; expanding lists every accepted answer, figlion first. */
 export function CatchList({ rounds, results }: CatchListProps) {
   const [open, setOpen] = useState<number | null>(rounds[0]?.round ?? null)
+  const openedButton = useRef<HTMLButtonElement | null>(null)
+
+  useLayoutEffect(() => {
+    openedButton.current?.scrollIntoView({ block: 'nearest' })
+    openedButton.current = null
+  }, [open])
+
   return (
     <ul className="flex flex-col">
       {rounds.map((round) => {
@@ -25,16 +32,19 @@ export function CatchList({ rounds, results }: CatchListProps) {
               type="button"
               aria-expanded={isOpen}
               aria-controls={panelId}
-              onClick={() => setOpen(isOpen ? null : round.round)}
+              onClick={(event) => {
+                openedButton.current = isOpen ? null : event.currentTarget
+                setOpen(isOpen ? null : round.round)
+              }}
               aria-label={`Prompt ${round.round}: ${round.prompt}. You: ${
                 mine?.accepted ? (mine.answer ?? '') : 'nothing landed'
               }, ${mine?.points ?? 0} points`}
-              className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4 text-left hover:bg-canvas/60 sm:px-2"
+              className="grid w-full scroll-mt-3 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4 text-left hover:bg-canvas/60 sm:px-2"
             >
               <span className="font-mono text-[12px] text-mute">P{round.round}</span>
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="truncate text-[17px] sm:text-[19px]">{round.prompt}</span>
-                <span className="truncate font-mono text-[13px] text-ink-soft">
+                <span className="wrap-break-word text-[17px] sm:text-[19px]">{round.prompt}</span>
+                <span className="wrap-break-word font-mono text-[13px] text-ink-soft">
                   {mine?.accepted ? `you: ${mine.answer ?? ''}` : 'you: nothing landed'}
                 </span>
               </span>

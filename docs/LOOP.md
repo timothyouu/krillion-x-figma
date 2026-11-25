@@ -31,3 +31,5 @@ Append one line per iteration: `iteration N | verifier results | what changed`.
 
 - iteration 3 | typecheck ok, 52/52 tests, build ok, ALL SMOKE CHECKS PASSED, E2E PASSED (42), three browser dives with zero console errors | Overplayed tier and cursor stamp, typography comparison, and motion verified. Tablet captures exposed sticker overlap with the title and rules line.
 - iteration 4 | typecheck ok, 52/52 tests, build ok, ALL SMOKE CHECKS PASSED, E2E PASSED (42), 1280 × 832 and 768 × 832 full dives with zero console errors, reduced-motion dive and leaderboard reorder passed | Moved tablet stickers clear of the home text and kept the HUD depth counter tied to server depth. Reveal frame intervals were 16.7 ms (desktop) and 16.8 ms (tablet) at the 95th percentile in Chromium.
+
+- Responsive QA | typecheck ok, 52/52 tests, build ok, 13 full Chromium dives with zero responsive assertions or console errors, 320 × 568 through 3440 × 1440 | Fixed clipped onboarding and picker focus, compact answer and reveal layouts, Catch scroll position, touch target sizes, and ultrawide ruler placement. Upcoming and closed panels used browser response fixtures.

@@ -48,12 +48,12 @@ function ResultsView({ data }: { data: ResultsResponse }) {
   return (
     <main className="results-surface mx-auto flex w-full max-w-[1120px] flex-col gap-8 px-4 py-8 sm:px-8 sm:py-12">
       <header className="flex items-center justify-between gap-4">
-        <Link to="/" className="font-mono text-[22px] tracking-[0.02em] sm:text-[28px]">
+        <Link to="/" className="inline-flex min-h-11 items-center font-mono text-[22px] tracking-[0.02em] sm:text-[28px]">
           FIGILLION
         </Link>
         <Link
           to="/leaderboard"
-          className="inline-flex items-center gap-2 rounded-tag border border-line bg-paper px-3 py-2 text-[15px] font-medium hover:border-select"
+          className="inline-flex min-h-11 items-center gap-2 rounded-tag border border-line bg-paper px-3 py-2 text-[15px] font-medium hover:border-select"
         >
           <span className="size-2 rounded-full bg-select animate-live" aria-hidden />
           Live leaderboard
