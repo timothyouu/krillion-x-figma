@@ -699,6 +699,26 @@
   cursor: none;
 }
 
+/* Figma keeps the arrow over clickable things instead of switching to a pointing hand. */
+:root[data-figillion-pointer='arrow'] :is(button, a, label, summary, [role='button'], [role='radio'], [role='link']) {
+  cursor: inherit;
+}
+
+/* Figma's text I-beam: black with a white edge so it reads on any fill. */
+:root[data-figillion-pointer='text'],
+:root[data-figillion-pointer='text'] :is(input, textarea, [contenteditable]) {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='22' viewBox='0 0 12 22'%3E%3Cpath d='M2 1.5h3l1 1 1-1h3M6 2.5v17M2 20.5h3l1-1 1 1h3' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 1.5h3l1 1 1-1h3M6 2.5v17M2 20.5h3l1-1 1 1h3' fill='none' stroke='black' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 6 11, text;
+}
+
+/*
+ * Figma's hover: a thin blue outline on the object under the pointer. Mouse only (the root
+ * attribute is set by the player cursor), and keyboard focus keeps its own thicker ring.
+ */
+:root[data-figillion-pointer] :is(button, a, [role='button']):not(:disabled, :focus-visible):hover {
+  outline: 1px solid var(--color-select);
+  outline-offset: 2px;
+}
+
 .canvas-player-cursor,
 .canvas-high-five {
   position: fixed;

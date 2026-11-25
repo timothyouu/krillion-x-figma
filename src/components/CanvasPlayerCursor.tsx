@@ -21,6 +21,9 @@ const TOUCH_HOLD_MS = 350
 const TOUCH_SLOP = 10
 const TOUCH_RAISE_MS = 140
 const CONTROL = 'button, a, input, textarea, select, label, [contenteditable], [role="button"], [role="radio"], [data-no-player-cursor]'
+/** Text you can type into: Figma swaps the arrow for its I-beam here. */
+const TEXT_FIELD = 'input:not([type="button"], [type="submit"], [type="checkbox"], [type="radio"]), textarea, [contenteditable]'
+const OPT_OUT = '[data-no-player-cursor]'
 
 interface Point {
   x: number
@@ -244,13 +247,30 @@ export function CanvasPlayerCursor({ nickname }: { nickname: string }) {
       frame = 0
       if (!event || !pointer) return
       const { target, clientX: x, clientY: y } = event
-      if (!(target instanceof Element) || target.closest(CONTROL)) {
+      if (!(target instanceof Element) || target.closest(OPT_OUT)) {
         hidePointer()
         return
       }
 
-      trackShake(x, now)
-      if (pointer.hasAttribute('data-ready')) answerWithHand({ x, y }, now)
+      // Text fields: Figma's I-beam, no name tag, no high five.
+      if (target.closest(TEXT_FIELD)) {
+        lowerHands()
+        gesture = null
+        pointer.removeAttribute('data-visible')
+        if (root.getAttribute('data-figillion-pointer') !== 'text') root.setAttribute('data-figillion-pointer', 'text')
+        return
+      }
+
+      // Buttons, links and the FigPal: as in Figma, the arrow and name tag stay and the thing under
+      // the pointer gets a hover outline (CSS). High fives only happen on open canvas.
+      const overControl = target.closest(CONTROL) !== null
+      if (overControl) {
+        gesture = null
+        if (pointer.hasAttribute('data-ready')) lowerHands()
+      } else {
+        trackShake(x, now)
+        if (pointer.hasAttribute('data-ready')) answerWithHand({ x, y }, now)
+      }
 
       pointer.style.transform = `translate3d(${x}px, ${y}px, 0)`
       pointer.toggleAttribute('data-flip', x > window.innerWidth - 190)
