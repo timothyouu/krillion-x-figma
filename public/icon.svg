@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- FIGILLION mark (large): an F selected on the canvas, with the figlion star stamped on its corner. -->
+  <defs>
+    <clipPath id="tile"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="512" height="512" fill="#f5f5f5"/>
+    <path d="M0 128H512M0 256H512M0 384H512M128 0V512M256 0V512M384 0V512" stroke="#e2e2e2" stroke-width="6"/>
+  </g>
+  <rect x="104" y="104" width="304" height="304" fill="#ffffff" stroke="#009cff" stroke-width="16"/>
+  <path d="M184 168H336V220H244V260H320V310H244V384H184Z" fill="#161616"/>
+  <g fill="#ffffff" stroke="#009cff" stroke-width="12">
+    <rect x="84" y="84" width="40" height="40"/>
+    <rect x="84" y="388" width="40" height="40"/>
+    <rect x="388" y="388" width="40" height="40"/>
+  </g>
+  <path transform="translate(388 124) rotate(12)" d="M0 -80L21.16 -29.12L76.08 -24.72L34.24 11.12L47.02 64.72L0 36L-47.02 64.72L-34.24 11.12L-76.08 -24.72L-21.16 -29.12Z" fill="#ffc700" stroke="#161616" stroke-width="10" stroke-linejoin="round"/>
+</svg>
