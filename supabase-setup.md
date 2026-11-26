@@ -2,7 +2,7 @@
 
 This is everything needed to get the backend ready for a playable game **today (Nov 24)**, then for Ankita's real content and Dec 8. The full design is in [specs.md](specs.md) (sections 4, 5 and 9).
 
-Start with [`supabase/migrations/20261124000000_figillion_init.sql`](supabase/migrations/20261124000000_figillion_init.sql) and apply the follow-up migration in section 3. Then switch on anonymous sign-ins and send Timothy the two values in section 5. Review the SQL before running it. Tell Timothy about any changes so the spec stays in sync.
+Start with [`supabase/migrations/20261124000000_figillion_init.sql`](supabase/migrations/20261124000000_figillion_init.sql) and apply the follow-up migrations in section 3. Then switch on anonymous sign-ins and send Timothy the two values in section 5. Review the SQL before running it. Tell Timothy about any changes so the spec stays in sync.
 
 ---
 
@@ -28,7 +28,7 @@ Pick one:
 
 **Option A: SQL Editor (no tools needed)**
 1. Open **SQL Editor → New query**.
-2. On a fresh project, run the [initial migration](supabase/migrations/20261124000000_figillion_init.sql), then the [answer-window migration](supabase/migrations/20261125025004_enforce_prompt_answer_window.sql). On an existing project, apply the pending migration only.
+2. On a fresh project, run the [initial migration](supabase/migrations/20261124000000_figillion_init.sql), then the [answer-window migration](supabase/migrations/20261125025004_enforce_prompt_answer_window.sql), then the [game-close migration](supabase/migrations/20261126041750_finish_dives_when_game_closes.sql). On an existing project, apply the pending migrations only, in that order.
 3. For a fresh practice database, paste [`supabase/seed.sql`](supabase/seed.sql) and **Run**. It creates the `practice` game with 5 generic prompts and returns a summary like `{"game": "practice", "rounds": [...]}`.
 
 **Option B: Supabase CLI**
@@ -46,7 +46,7 @@ What it creates:
 | `public` | `import_prompts`, `import_answers` | No (locked CSV landing tables) |
 | `private` | `prompts`, `accepted_answers`, `players`, `player_rounds`, `attempts` | No. The schema isn't exposed by the API at all |
 | `public` | 8 RPCs: `get_my_progress`, `join_game`, `start_prompt`, `submit_answer`, `finish_prompt`, `get_results`, `get_catch`, `get_leaderboard` | Yes, the only way in |
-| `private` | `publish_import()` and helpers | No. You run `publish_import` from the SQL Editor |
+| `private` | `publish_import()`, `finalize_game()` and helpers | No. You run them from the SQL Editor |
 
 ### Answer-window fix for an existing project
 
@@ -192,7 +192,17 @@ Nothing in GitHub needs cleaning. The repo only ever holds the generic practice 
   from private.players p join public.games g on g.id = p.game_id
   where g.slug = 'midyear-2026';
   ```
-- To end the game: `update public.games set closes_at = now() where slug = 'midyear-2026';`
+- To end the game:
+  ```sql
+  update public.games set closes_at = now() where slug = 'midyear-2026';
+  ```
+  No new round starts after this. A player who is mid-round can still answer until that round's 25-second deadline. After that their dive finishes: rounds they didn't reach score 0, and they go to results and the Catch. Players still on the page are finished as soon as their app next checks in.
+- About 30 seconds after closing, finish everyone whose tab is gone so the leaderboard shows 0 diving:
+  ```sql
+  select private.finalize_game('midyear-2026');
+  ```
+  It returns `finalized` (players it just finished) and `still_answering` (rounds still inside their window). If `still_answering` isn't 0, wait a few seconds and run it again. It's safe to run more than once, and it refuses to run on a game that hasn't closed (`game_not_closed`).
+- Reopening a game after `finalize_game` doesn't bring finalized players back. Their dives stay finished.
 
 ## 9. Error messages the app handles
 
@@ -201,7 +211,7 @@ The RPCs raise these exact messages; Timothy's UI maps them to screens or toasts
 | Message | Meaning |
 |---|---|
 | `game_not_found` | Wrong slug |
-| `game_not_open` | Before `opens_at` or after `closes_at` |
+| `game_not_open` | Before `opens_at` or after `closes_at`. After the close, `start_prompt` only resumes a round still in progress. The client should resync progress, which then reports the dive finished. |
 | `not_signed_in` | No anonymous session yet |
 | `not_joined` | Player hasn't called `join_game` |
 | `invalid_display_name` / `invalid_figpal` | Name not 1–24 chars / bad FigPal slug |
@@ -225,6 +235,12 @@ For the timer fix specifically, run [the answer-window regression test](supabase
 
 ```bash
 docker exec -i supabase_db_figillion psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/answer_window.sql
+```
+
+For the game-close fix, run [the close-game test](supabase/tests/close_game.sql) the same way. It rolls back its test data and prints `CLOSE GAME CHECKS PASSED`. It checks a player between rounds, one mid-round, one whose tab is gone and one who never started, plus `finalize_game`.
+
+```bash
+docker exec -i supabase_db_figillion psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/close_game.sql
 ```
 
 On plain Postgres, run [`supabase/tests/local_stubs.sql`](supabase/tests/local_stubs.sql) first. It creates stand-ins for Supabase's `auth` schema and roles. A clean run ends with `ALL SMOKE CHECKS PASSED`.
