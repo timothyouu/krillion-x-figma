@@ -119,6 +119,7 @@ Rules the server enforces (the client only displays):
 - `start_prompt` only serves rounds in order and is idempotent: calling it again returns the original deadline, so refreshing doesn't reset the clock.
 - The server only accepts answers from `clock_starts_at` up to but excluding `deadline`. The round may time out once that same deadline is reached.
 - `get_catch` returns nothing until `players.finished_at` is set.
+- Closing the game never strands a player. No new round starts after `closes_at`, but a round already inside its answer window can still be answered. After that the dive finishes, with 0 points for every round the player didn't reach. `get_my_progress`, `submit_answer` and `finish_prompt` apply this, and `private.finalize_game` sweeps up players whose tab is gone.
 
 ## 5. Where everything is stored
 
@@ -303,14 +304,14 @@ private.attempts         id, player_round_id, raw_answer, normalized, matched_an
 |---|---|---|
 | `get_my_progress(game_slug)` | game status, joined?, current round, score, depth, finished? | Works before joining. |
 | `join_game(game_slug, display_name, figpal_slug)` | player | Game open; one player row per anon user. |
-| `start_prompt(game_slug, round)` | round, theme, text, `deadline` | Previous round resolved. The first call reveals the prompt and starts the 25 s clock. Later calls keep the stored deadline. |
+| `start_prompt(game_slug, round)` | round, theme, text, `deadline` | Previous round resolved. The first call reveals the prompt and starts the 25 s clock. Later calls keep the stored deadline. After the game closes, only a round still in progress can be resumed (`game_not_open` otherwise). |
 | `submit_answer(game_slug, round, answer)` | `accepted`, and if accepted: tier, points, canonical answer, total score, depth | During the server’s scoring window for an unresolved round. Matching per 3.2. |
-| `finish_prompt(game_slug, round)` | same shape with 0 points | At or after the deadline with no accepted answer. Sets `finished_at` after round 5. |
+| `finish_prompt(game_slug, round)` | same shape with 0 points | At or after the deadline with no accepted answer. Sets `finished_at` after round 5, or right away once the game has closed. |
 | `get_results(game_slug)` | score, depth, rank, total players, percentile, score histogram (20 buckets), per-round answer/tier/points | Only when finished. |
 | `get_catch(game_slug)` | every round's accepted answers with points, figlion first with fun fact | Only when finished. |
 | `get_leaderboard(game_slug, limit 25)` | ranked rows, counts (total, finished, diving), and `me` (your rank) when signed in | Public. Max 100 rows. |
 
-Content import (SQL Editor only, not callable from the app): `private.publish_import(game_slug, p_force default false)`. Error messages the app must handle are listed in [supabase-setup.md](supabase-setup.md) section 9.
+SQL Editor only, not callable from the app: `private.publish_import(game_slug, p_force default false)` for the content import, and `private.finalize_game(game_slug)` to finish every remaining dive after a game closes. Error messages the app must handle are listed in [supabase-setup.md](supabase-setup.md) section 9.
 
 ## 10. Sizing for 220 players
 
